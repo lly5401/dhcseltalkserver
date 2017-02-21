@@ -1,0 +1,63 @@
+{
+  "name": "sealtalk-server",
+  "version": "1.0.0",
+  "description": "SealTalk App Server powered by RongCloud.",
+  "scripts": {
+    "test": "NODE_ENV=development node_modules/istanbul/lib/cli.js cover node_modules/jasmine/bin/jasmine.js",
+    "initdb": "coffee --nodejs --harmony sync.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rongcloud/sealtalk-server.git"
+  },
+  "keywords": [
+    "SealTalk",
+    "RongCloud",
+    "IM"
+  ],
+  "author": "Ariel Yang <arielyang@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rongcloud/sealtalk-server/issues"
+  },
+  "homepage": "https://github.com/rongcloud/sealtalk-server#readme",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "co": "^4.6.0",
+    "compression": "^1.6.0",
+    "cookie-parser": "^1.4.0",
+    "cors": "^2.7.1",
+    "debug": "^2.2.0",
+    "express": "^4.13.3",
+    "jsonfile": "^2.2.3",
+    "lru-cache": "^4.0.1",
+    "moment": "^2.10.6",
+    "mysql": "^2.12.0",
+    "qiniu": "^6.1.8",
+    "rongcloud-sdk": "git+https://github.com/rongcloud/server-sdk-nodejs.git",
+    "semver": "^5.1.0",
+    "sequelize": "^3.28.0",
+    "underscore": "^1.8.3",
+    "xss": "^0.2.13"
+  },
+  "devDependencies": {
+    "body-parser": "^1.15.2",
+    "compression": "^1.6.2",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.1",
+    "cross-env": "^3.1.3",
+    "express": "^4.14.0",
+    "git": "^0.1.5",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-coffee": "^0.13.0",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-nodemon": "^0.4.2",
+    "istanbul": "^0.4.0",
+    "jasmine": "^2.3.2",
+    "lru-cache": "^4.0.2",
+    "moment": "^2.17.1",
+    "supertest": "^1.1.0"
+  }
+}
