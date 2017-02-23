@@ -24,7 +24,7 @@ module.exports =
   # N3D 密钥，用来加密所有的 Id 数字，不要小于 5 位
   N3D_KEY: 'qqqaaa'
   # 跨域支持所需配置的主机信息（请求者），包括请求服务器的域名和端口号
-  CORS_HOSTS: 'http://localhost:8080'
+  CORS_HOSTS: 'http://test.com:8080'
   # 本服务部署的 HTTP 端口号
   SERVER_PORT: '8585'
   # MySQL 数据库名称
