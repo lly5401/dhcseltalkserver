@@ -216,6 +216,8 @@ router.post('/register', function(req, res, next) {
           }, {
             transaction: t
           }).then(function(user) {
+
+
             return DataVersion.create({
               userId: user.id,
               transaction: t
@@ -237,9 +239,12 @@ router.post('/register', function(req, res, next) {
 
 router.post('/login', function(req, res, next) {
   var password, phone, region;
+  //usertype = req.body.usertype;
   region = 86;
   phone = req.body.phone;
   password = 1;
+//判断是客户还是内部用户
+  
   //console.log('0000000000000000000000');
   //if (!validator.isMobilePhone(phone, regionMap[region])) {
     //return res.status(400).send('Invalid region and phone number.');
@@ -255,7 +260,6 @@ router.post('/login', function(req, res, next) {
     errorMessage = 'Invalid phone or password.';
     if (!user) {
           
-
         return sequelize.transaction(function(t) {
           return User.create({
             nickname: phone,
@@ -272,23 +276,16 @@ router.post('/login', function(req, res, next) {
             }).then(function() {
               Session.setAuthCookie(res, user.id);
               Session.setNicknameToCache(user.id, phone);
-              return getToken(user.id, user.nickname, user.portraitUri).then(function(token) {
-          return res.send(new APIResult(200, Utility.encodeResults({
-            id: user.id,
-            token: token
-          })));
-        });
-              return res.send(new APIResult(200, Utility.encodeResults({
-                id: user.id
-              })));
               
+              return res.redirect('/user/get_token');
               
             });
           });
         });
           
           
-    } else {
+    } 
+    //else {
       Session.setAuthCookie(res, user.id);
       Session.setNicknameToCache(user.id, user.nickname);
       GroupMember.findAll({
@@ -338,8 +335,10 @@ router.post('/login', function(req, res, next) {
           token: user.rongCloudToken
         })));
       }
-    }
+    //}
   })["catch"](next);
+
+  
 });
 
 router.post('/logout', function(req, res) {
