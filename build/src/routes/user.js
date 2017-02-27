@@ -389,7 +389,7 @@ router.post('/reset_password', function(req, res, next) {
 
 router.get('/strangers', function (req, res, next ) {
     return User.findAll({
-    attributes: ['id', 'nickname', 'portraitUri']
+    attributes: ['id', 'nickname', 'portraitUri','rongCloudToken']
   }).then(function(users) {
     return res.send(new APIResult(200, Utility.encodeResults(users)));
   })["catch"](next);
