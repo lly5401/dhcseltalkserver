@@ -386,6 +386,18 @@ router.post('/reset_password', function(req, res, next) {
   })["catch"](next);
 });
 
+
+router.get('/strangers', function (req, res, next ) {
+    return User.findAll({
+    attributes: ['id', 'nickname', 'portraitUri']
+  }).then(function(users) {
+    return res.send(new APIResult(200, Utility.encodeResults(users)));
+  })["catch"](next);
+});
+
+
+
+
 router.post('/change_password', function(req, res, next) {
   var newPassword, oldPassword;
   newPassword = req.body.newPassword;
