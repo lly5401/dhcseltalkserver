@@ -238,12 +238,18 @@ router.post('/register', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
-  var password, phone, region;
-  //usertype = req.body.usertype;
+  var password, phone, region, usertype;
+  usertype = req.body.usertype;
   region = 86;
   phone = req.body.phone;
   password = 1;
 //判断是客户还是内部用户
+  if (usertype === 'B') {
+    phone = `B_${phone}`;
+  } 
+  else {
+    phone = 'E_' + phone;
+  }
   
   //console.log('0000000000000000000000');
   //if (!validator.isMobilePhone(phone, regionMap[region])) {
