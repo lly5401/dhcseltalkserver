@@ -240,13 +240,13 @@ router.post('/login', function(req, res, next) {
   region = 86;
   phone = req.body.phone;
   password = 1;
-  console.log('0000000000000000000000');
+  //console.log('0000000000000000000000');
   if (!validator.isMobilePhone(phone, regionMap[region])) {
     return res.status(400).send('Invalid region and phone number.');
   }
   return User.findOne({
     where: {
-      region: region,
+      //region: region,
       phone: phone
     },
     attributes: ['id', 'passwordHash', 'passwordSalt', 'nickname', 'portraitUri', 'rongCloudToken']
