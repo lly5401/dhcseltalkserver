@@ -291,7 +291,7 @@ router.post('/login', function(req, res, next) {
           
           
     } 
-    //else {
+    else {
       Session.setAuthCookie(res, user.id);
       Session.setNicknameToCache(user.id, user.nickname);
       GroupMember.findAll({
@@ -341,7 +341,7 @@ router.post('/login', function(req, res, next) {
           token: user.rongCloudToken
         })));
       }
-    //}
+    }
   })["catch"](next);
 
   
