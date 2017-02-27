@@ -13,7 +13,7 @@ module.exports = {
   N3D_KEY: 'qqqaaa',
   CORS_HOSTS: 'http://test.com:8080',
   SERVER_PORT: '8585',
-  DB_NAME: 'IM',
+  DB_NAME: 'rim',
   DB_USER: 'root',
   DB_PASSWORD: '',
   DB_HOST: 'localhost',
