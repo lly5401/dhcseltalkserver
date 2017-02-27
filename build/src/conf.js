@@ -1,0 +1,21 @@
+module.exports = {
+  AUTH_COOKIE_NAME: 'webIM',
+  AUTH_COOKIE_KEY: 'qqqsssssssssssssssss',
+  AUTH_COOKIE_MAX_AGE: '70000000',
+  RONGCLOUD_APP_KEY: '6tnym1br65nv7',
+  RONGCLOUD_APP_SECRET: 'CvBQdTzWNqZg6G',
+  RONGCLOUD_SMS_REGISTER_TEMPLATE_ID: 'qq',
+  RONGCLOUD_SMS_RESET_PASSWORD_TEMPLATE_ID: 'qq',
+  QINIU_ACCESS_KEY: '<-- 此处填写七牛颁发的 Access Key -->',
+  QINIU_SECRET_KEY: '<-- 此处填写七牛颁发的 Secret Key -->',
+  QINIU_BUCKET_NAME: '<-- 此处填写七牛创建的空间名称 -->',
+  QINIU_BUCKET_DOMAIN: '<-- 此处填写七牛创建的空间域名 -->',
+  N3D_KEY: 'qqqaaa',
+  CORS_HOSTS: 'http://test.com:8080',
+  SERVER_PORT: '8585',
+  DB_NAME: 'IM',
+  DB_USER: 'root',
+  DB_PASSWORD: '',
+  DB_HOST: 'localhost',
+  DB_PORT: '3306'
+};
