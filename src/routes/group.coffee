@@ -77,8 +77,8 @@ router.post '/create', (req, res, next) ->
 
   if not validator.isLength name, GROUP_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH
     return res.status(400).send 'Length of group name is out of limit.'
-  if memberIds.length is 1
-    return res.status(400).send "Group's member count should be greater than 1 at least."
+  # if memberIds.length is 1
+  #   return res.status(400).send "Group's member count should be greater than 1 at least."
   if memberIds.length > DEFAULT_MAX_GROUP_MEMBER_COUNT
     return res.status(400).send "Group's member count is out of max group member count limit (#{DEFAULT_MAX_GROUP_MEMBER_COUNT})."
 
