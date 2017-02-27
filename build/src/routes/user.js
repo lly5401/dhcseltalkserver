@@ -254,7 +254,40 @@ router.post('/login', function(req, res, next) {
     var errorMessage;
     errorMessage = 'Invalid phone or password.';
     if (!user) {
-      return res.send(new APIResult(1000, null, errorMessage));
+          
+
+        return sequelize.transaction(function(t) {
+          return User.create({
+            nickname: phone,
+            region: region,
+            phone: phone,
+            passwordHash: 'aaa',
+            passwordSalt: '222'
+          }, {
+            transaction: t
+          }).then(function(user) {
+            return DataVersion.create({
+              userId: user.id,
+              transaction: t
+            }).then(function() {
+              Session.setAuthCookie(res, user.id);
+              Session.setNicknameToCache(user.id, phone);
+              return getToken(user.id, user.nickname, user.portraitUri).then(function(token) {
+          return res.send(new APIResult(200, Utility.encodeResults({
+            id: user.id,
+            token: token
+          })));
+        });
+              return res.send(new APIResult(200, Utility.encodeResults({
+                id: user.id
+              })));
+              
+              
+            });
+          });
+        });
+          
+          
     } else {
       Session.setAuthCookie(res, user.id);
       Session.setNicknameToCache(user.id, user.nickname);
@@ -300,7 +333,6 @@ router.post('/login', function(req, res, next) {
           })));
         });
       } else {
-        console.log("UserId"+user.id);
         return res.send(new APIResult(200, Utility.encodeResults({
           id: user.id,
           token: user.rongCloudToken
