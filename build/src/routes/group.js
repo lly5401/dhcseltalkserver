@@ -157,6 +157,7 @@ router.post('/add', function(req, res, next) {
   var currentUserId, encodedGroupId, encodedMemberIds, groupId, memberIds, timestamp;
   groupId = req.body.groupId;
   memberIds = req.body.memberIds;
+  console.log('memberIds'+memberIds);
   encodedGroupId = req.body.encodedGroupId;
   encodedMemberIds = req.body.encodedMemberIds;
   Utility.log('Group %s add members %j by user %s', groupId, memberIds, Session.getCurrentUserId(req));
@@ -164,10 +165,12 @@ router.post('/add', function(req, res, next) {
   timestamp = Date.now();
   return Group.getInfo(groupId).then(function(group) {
     var memberCount;
+    console.log(group.id);
     if (!group) {
       return res.status(404).send('Unknown group.');
     }
     memberCount = group.memberCount + memberIds.length;
+    console.log(memberCount+'group.maxMemberCount:'+group.maxMemberCount);
     if (memberCount > group.maxMemberCount) {
       return res.status(400).send("Group's member count is out of max group member count limit (" + group.maxMemberCount + ").");
     }
