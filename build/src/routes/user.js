@@ -216,6 +216,8 @@ router.post('/register', function(req, res, next) {
           }, {
             transaction: t
           }).then(function(user) {
+
+
             return DataVersion.create({
               userId: user.id,
               transaction: t
@@ -236,17 +238,26 @@ router.post('/register', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
-  var password, phone, region;
+  var password, phone, region, usertype;
+  usertype = req.body.usertype;
   region = 86;
   phone = req.body.phone;
   password = 1;
-  console.log('0000000000000000000000');
-  if (!validator.isMobilePhone(phone, regionMap[region])) {
-    return res.status(400).send('Invalid region and phone number.');
+//判断是客户还是内部用户
+  if (usertype === 'B') {
+    phone = `B_${phone}`;
+  } 
+  else {
+    phone = 'E_' + phone;
   }
+  
+  //console.log('0000000000000000000000');
+  //if (!validator.isMobilePhone(phone, regionMap[region])) {
+    //return res.status(400).send('Invalid region and phone number.');
+  //}
   return User.findOne({
     where: {
-      region: region,
+      //region: region,
       phone: phone
     },
     attributes: ['id', 'passwordHash', 'passwordSalt', 'nickname', 'portraitUri', 'rongCloudToken']
@@ -254,8 +265,33 @@ router.post('/login', function(req, res, next) {
     var errorMessage;
     errorMessage = 'Invalid phone or password.';
     if (!user) {
-      return res.send(new APIResult(1000, null, errorMessage));
-    } else {
+          
+        return sequelize.transaction(function(t) {
+          return User.create({
+            nickname: phone,
+            region: region,
+            phone: phone,
+            passwordHash: 'aaa',
+            passwordSalt: '222'
+          }, {
+            transaction: t
+          }).then(function(user) {
+            return DataVersion.create({
+              userId: user.id,
+              transaction: t
+            }).then(function() {
+              Session.setAuthCookie(res, user.id);
+              Session.setNicknameToCache(user.id, phone);
+              
+              return res.redirect('/user/get_token');
+              
+            });
+          });
+        });
+          
+          
+    } 
+    //else {
       Session.setAuthCookie(res, user.id);
       Session.setNicknameToCache(user.id, user.nickname);
       GroupMember.findAll({
@@ -287,12 +323,12 @@ router.post('/login', function(req, res, next) {
         return Utility.logError('Sync groups error: ', error);
       });
       if (user.rongCloudToken === '') {
-        if (req.app.get('env') === 'development') {
-          return res.send(new APIResult(200, Utility.encodeResults({
-            id: user.id,
-            token: 'fake token'
-          })));
-        }
+        //if (req.app.get('env') === 'development') {
+          //return res.send(new APIResult(200, Utility.encodeResults({
+            //id: user.id,
+            //token: 'fake token'
+          //})));
+        //}
         return getToken(user.id, user.nickname, user.portraitUri).then(function(token) {
           return res.send(new APIResult(200, Utility.encodeResults({
             id: user.id,
@@ -300,14 +336,15 @@ router.post('/login', function(req, res, next) {
           })));
         });
       } else {
-        console.log("UserId"+user.id);
         return res.send(new APIResult(200, Utility.encodeResults({
           id: user.id,
           token: user.rongCloudToken
         })));
       }
-    }
+    //}
   })["catch"](next);
+
+  
 });
 
 router.post('/logout', function(req, res) {

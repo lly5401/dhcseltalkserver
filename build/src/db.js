@@ -254,10 +254,10 @@ User = sequelize.define('users', {
     }
   },
   phone: {
-    type: Sequelize.STRING(11),
+    type: Sequelize.STRING(100),
     allowNull: false,
     validate: {
-      isInt: true
+      //isInt: true
     }
   },
   nickname: {
