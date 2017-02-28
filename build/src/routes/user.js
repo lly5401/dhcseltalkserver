@@ -1,4 +1,4 @@
-var APIResult, Blacklist, Config, DataVersion, Friendship, Group, GroupMember, GroupSync, LoginLog, MAX_GROUP_MEMBER_COUNT, NICKNAME_MAX_LENGTH, NICKNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PORTRAIT_URI_MAX_LENGTH, PORTRAIT_URI_MIN_LENGTH, Session, User, Utility, VerificationCode, _, co, express, getToken, moment, qiniu, ref, regionMap, rongCloud, router, sequelize, validator;
+var request, http,querystring,SDAPI, APIResult, Blacklist, Config, DataVersion, Friendship, Group, GroupMember, GroupSync, LoginLog, MAX_GROUP_MEMBER_COUNT, NICKNAME_MAX_LENGTH, NICKNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PORTRAIT_URI_MAX_LENGTH, PORTRAIT_URI_MIN_LENGTH, Session, User, Utility, VerificationCode, _, co, express, getToken, moment, qiniu, ref, regionMap, rongCloud, router, sequelize, validator;
 
 express = require('express');
 
@@ -19,6 +19,13 @@ Session = require('../util/session');
 Utility = require('../util/util').Utility;
 
 APIResult = require('../util/util').APIResult;
+
+SDAPI = require('../util/SDApi');
+
+http = require('http');
+querystring = require('querystring');
+
+request = require('request');
 
 ref = require('../db'), sequelize = ref[0], User = ref[1], Blacklist = ref[2], Friendship = ref[3], Group = ref[4], GroupMember = ref[5], GroupSync = ref[6], DataVersion = ref[7], VerificationCode = ref[8], LoginLog = ref[9];
 
@@ -71,6 +78,15 @@ getToken = function(userId, nickname, portraitUri) {
     });
   });
 };
+
+
+
+
+
+
+
+
+
 
 router.post('/send_code', function(req, res, next) {
   var phone, region;
@@ -397,11 +413,37 @@ router.post('/reset_password', function(req, res, next) {
 
 
 router.get('/strangers', function (req, res, next ) {
-    return User.findAll({
-    attributes: ['id', 'nickname', 'portraitUri','rongCloudToken']
-  }).then(function(users) {
-    return res.send(new APIResult(200, Utility.encodeResults(users)));
-  })["catch"](next);
+
+  var rtype,url,deptno,empno, cno;
+
+  rtype = req.query.rtype;
+  deptno = req.query.deptno;
+  empno = req.query.empno;
+  cno = req.query.cno;
+
+  if (rtype === 'E') {
+    url = 'http://172.28.4.241:7030/eaecim/getContactByE.do?deptno='+deptno+'&empno='+empno;
+  } 
+   else if (rtype === 'B') {
+    url = 'http://172.28.4.241:7030/eaecim/getContactByB.do?deptno='+deptno+'&cno='+cno;
+  } else {
+    return res.status(400).send('获取内部oa用户');
+  }
+
+
+var request = require('request');
+request(url, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+    var  body = eval('('+response.body+')');
+    return res.send(new APIResult(200, Utility.encodeResults({
+          data: body
+        })));
+  }
+})
+
+
+
+
 });
 
 

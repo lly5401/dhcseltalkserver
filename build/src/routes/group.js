@@ -83,6 +83,9 @@ validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
 
+  console.log(req.body);
+
+
   var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
   orderid = req.body.orderid;
 
