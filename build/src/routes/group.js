@@ -18,7 +18,7 @@ APIResult = require('../util/util').APIResult;
 
 HTTPError = require('../util/util').HTTPError;
 
-ref = require('../db'), sequelize = ref[0], User = ref[1], Blacklist = ref[2], Friendship = ref[3], Group = ref[4], GroupMember = ref[5], GroupSync = ref[6], DataVersion = ref[7], VerificationCode = ref[8], LoginLog = ref[9];
+ref = require('../db'), sequelize = ref[0], User = ref[1], Blacklist = ref[2], Friendship = ref[3], Group = ref[4], GroupMember = ref[5], GroupSync = ref[6], DataVersion = ref[7], VerificationCode = ref[8], LoginLog = ref[9], OrderToGroup = ref[10];
 
 GROUP_CREATOR = 0;
 
@@ -82,13 +82,20 @@ router = express.Router();
 validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
+
   var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
   orderid = req.body.orderid;
-  name = Utility.xss(req.body.name, GROUP_NAME_MAX_LENGTH);
+
+  a_name = req.body.name;
+  if (orderid) {
+    a_name = `${orderid} - `;
+  };
+
+  name = Utility.xss(a_name, GROUP_NAME_MAX_LENGTH);
   memberIds = req.body.memberIds;
   encodedMemberIds = req.body.encodedMemberIds;
   if (orderid) {
-      encodedMemberIds = null;
+      encodedMemberIds = [];
       memberIds = null;
       OrderToGroup.findOne({
         where: {
@@ -96,17 +103,23 @@ router.post('/create', function(req, res, next) {
         },
         attributes: ['id','orderid','groupid']
       }).then(function(ordertogroup){
-        return res.send(new APIResult(200, Utility.encodeResults({
+        if (ordertogroup) {
+          return res.send(new APIResult(200, Utility.encodeResults({
           groupid: ordertogroup.groupid
         })));
+        };
+        
       });
+
+      memberIds = [52,53,49];
+      memberIds.forEach(function(memberid){
+        encodedMemberIds.push(memberid);
+      });
+
+
   } 
 
 
-  if (orderid) {
-    memberIds = [{'userid':'111'},{'userid':'2222'}];
-  };
-  
   Utility.log('memberIds', memberIds);
   Utility.log('encodedMemberIds', encodedMemberIds);
   if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH)) {
@@ -135,6 +148,14 @@ router.post('/create', function(req, res, next) {
         }));
         Utility.log('Group %s created by %s', group.id, currentUserId);
         (yield GroupMember.bulkUpsert(group.id, memberIds, timestamp, t, currentUserId));
+        if (orderid) {
+               (yield OrderToGroup.create({
+                orderid: orderid,
+                groupid: group.id
+                },{
+                  transaction: t
+                }));
+              }
         return group;
       });
     }).then(function(group) {
@@ -147,6 +168,10 @@ router.post('/create', function(req, res, next) {
           result = JSON.parse(resultText);
           success = result.code === 200;
           if (success) {
+
+
+
+
             return Session.getCurrentUserNickname(currentUserId, User).then(function(nickname) {
               return sendGroupNotification(currentUserId, group.id, GROUP_OPERATION_CREATE, {
                 operatorNickname: nickname,
@@ -154,6 +179,10 @@ router.post('/create', function(req, res, next) {
                 timestamp: timestamp
               });
             });
+
+
+
+
           } else {
             Utility.logError('Error: create group failed on IM server, code: %s', result.code);
             return GroupSync.upsert({
@@ -166,14 +195,14 @@ router.post('/create', function(req, res, next) {
             });
           }
         });
+        
+        
+
         return res.send(new APIResult(200, Utility.encodeResults({
           id: group.id
         })));
+
       });
-    }).then(function(group){
-      if (orderid) {
-        
-      };
     });
   })["catch"](next);
 });

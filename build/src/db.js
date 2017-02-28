@@ -116,6 +116,7 @@ groupMemberClassMethods = {
           throw new HTTPError('Empty memberId in memberIds.', 400);
         }
         if (memberId === creatorId) {
+
           roleFlag = GROUP_CREATOR;
         }
         isUpdateMember = false;
@@ -670,4 +671,4 @@ LoginLog = sequelize.define('login_logs', {
   updatedAt: false
 });
 
-module.exports = [sequelize, User, Blacklist, Friendship, Group, GroupMember, GroupSync, DataVersion, VerificationCode, LoginLog];
+module.exports = [sequelize, User, Blacklist, Friendship, Group, GroupMember, GroupSync, DataVersion, VerificationCode, LoginLog,OrderToGroup];

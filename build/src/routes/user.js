@@ -238,6 +238,8 @@ router.post('/register', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
+
+
   var password, phone, region, usertype;
   usertype = req.body.usertype;
   region = 86;
