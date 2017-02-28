@@ -170,6 +170,7 @@ router.post('/add', function(req, res, next) {
       return res.status(404).send('Unknown group.');
     }
     memberCount = group.memberCount + memberIds.length;
+    console.log(memberCount+'group.maxMemberCount:'+group.maxMemberCount);
     if (memberCount > group.maxMemberCount) {
       return res.status(400).send("Group's member count is out of max group member count limit (" + group.maxMemberCount + ").");
     }
