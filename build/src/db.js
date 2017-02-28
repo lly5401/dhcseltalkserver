@@ -1,4 +1,4 @@
-var Blacklist, Config, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER, Group, GroupMember, GroupSync, HTTPError, LoginLog, Sequelize, User, Utility, VerificationCode, _, co, dataVersionClassMethods, friendshipClassMethods, groupClassMethods, groupMemberClassMethods, sequelize, userClassMethods, verificationCodeClassMethods;
+var Blacklist, Config, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER, Group, GroupMember, GroupSync, HTTPError, LoginLog, Sequelize, User,OrderToGroup, Utility, VerificationCode, _, co, dataVersionClassMethods, friendshipClassMethods, groupClassMethods, groupMemberClassMethods, sequelize, userClassMethods, verificationCodeClassMethods;
 
 Sequelize = require('sequelize');
 
@@ -397,6 +397,25 @@ Friendship.belongsTo(User, {
   foreignKey: 'friendId',
   constraints: false
 });
+
+OrderToGroup = sequelize.define('ordertogroup', {
+  id: {
+    type: Sequelize.INTEGER.UNSIGNED,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  orderid: {
+    type: Sequelize.STRING(50),
+    allowNull: false
+  },
+  groupid: {
+    type: Sequelize.INTEGER.UNSIGNED,
+    allowNull: false
+  }
+});
+
+
+
 
 Group = sequelize.define('groups', {
   id: {

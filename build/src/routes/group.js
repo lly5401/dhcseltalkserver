@@ -1,4 +1,4 @@
-var APIResult, Blacklist, Config, DEFAULT_MAX_GROUP_MEMBER_COUNT, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER, GROUP_MEMBER_DISPLAY_NAME_MAX_LENGTH, GROUP_MEMBER_DISPLAY_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH, GROUP_NAME_MIN_LENGTH, GROUP_OPERATION_ADD, GROUP_OPERATION_CREATE, GROUP_OPERATION_DISMISS, GROUP_OPERATION_KICKED, GROUP_OPERATION_QUIT, GROUP_OPERATION_RENAME, Group, GroupMember, GroupSync, HTTPError, LoginLog, MAX_USER_GROUP_OWN_COUNT, PORTRAIT_URI_MAX_LENGTH, PORTRAIT_URI_MIN_LENGTH, Session, User, Utility, VerificationCode, _, co, express, ref, rongCloud, router, sendGroupNotification, sequelize, validator;
+var APIResult, Blacklist,OrderToGroup, Config, DEFAULT_MAX_GROUP_MEMBER_COUNT, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER, GROUP_MEMBER_DISPLAY_NAME_MAX_LENGTH, GROUP_MEMBER_DISPLAY_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH, GROUP_NAME_MIN_LENGTH, GROUP_OPERATION_ADD, GROUP_OPERATION_CREATE, GROUP_OPERATION_DISMISS, GROUP_OPERATION_KICKED, GROUP_OPERATION_QUIT, GROUP_OPERATION_RENAME, Group, GroupMember, GroupSync, HTTPError, LoginLog, MAX_USER_GROUP_OWN_COUNT, PORTRAIT_URI_MAX_LENGTH, PORTRAIT_URI_MIN_LENGTH, Session, User, Utility, VerificationCode, _, co, express, ref, rongCloud, router, sendGroupNotification, sequelize, validator;
 
 express = require('express');
 
@@ -82,10 +82,26 @@ router = express.Router();
 validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
-  var currentUserId, encodedMemberIds, memberIds, name, timestamp;
+  var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
+  orderid = req.body.orderid;
   name = Utility.xss(req.body.name, GROUP_NAME_MAX_LENGTH);
   memberIds = req.body.memberIds;
   encodedMemberIds = req.body.encodedMemberIds;
+  if (orderid) {
+      encodedMemberIds = null;
+      memberIds = null;
+      OrderToGroup.findOne({
+        where: {
+          orderid : orderid
+        },
+        attributes: ['id','orderid','groupid']
+      }).then(function(ordertogroup){
+        return res.send(new APIResult(200, Utility.encodeResults({
+          groupid: ordertogroup.groupid
+        })));
+      });
+  };
+  
   Utility.log('memberIds', memberIds);
   Utility.log('encodedMemberIds', encodedMemberIds);
   if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH)) {

@@ -243,13 +243,7 @@ router.post('/login', function(req, res, next) {
   region = 86;
   phone = req.body.phone;
   password = 1;
-//判断是客户还是内部用户
-  if (usertype === 'B') {
-    phone = `B_${phone}`;
-  } 
-  else {
-    phone = 'E_' + phone;
-  }
+
   
   //console.log('0000000000000000000000');
   //if (!validator.isMobilePhone(phone, regionMap[region])) {
@@ -265,7 +259,13 @@ router.post('/login', function(req, res, next) {
     var errorMessage;
     errorMessage = 'Invalid phone or password.';
     if (!user) {
-          
+          //判断是客户还是内部用户
+  if (usertype === 'B') {
+    phone = `B_${phone}`;
+  } 
+  else {
+    phone = 'E_' + phone;
+  }
         return sequelize.transaction(function(t) {
           return User.create({
             nickname: phone,
