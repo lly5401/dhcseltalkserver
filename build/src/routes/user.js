@@ -810,4 +810,9 @@ router.get('/find/:region/:phone', function(req, res, next) {
   })["catch"](next);
 });
 
+router.get('/showUser/:phone', function(req, res, next) {
+ console.log('你好！');
+ return 1;
+});
+
 module.exports = router;

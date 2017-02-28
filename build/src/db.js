@@ -271,7 +271,7 @@ User = sequelize.define('users', {
   },
   passwordHash: {
     type: Sequelize.CHAR(40),
-    allowNull: false
+    allowNull: true
   },
   passwordSalt: {
     type: Sequelize.CHAR(4),
