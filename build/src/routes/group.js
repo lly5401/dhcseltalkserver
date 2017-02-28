@@ -100,6 +100,11 @@ router.post('/create', function(req, res, next) {
           groupid: ordertogroup.groupid
         })));
       });
+  } 
+
+
+  if (orderid) {
+    memberIds = [{'userid':'111'},{'userid':'2222'}];
   };
   
   Utility.log('memberIds', memberIds);
@@ -165,6 +170,10 @@ router.post('/create', function(req, res, next) {
           id: group.id
         })));
       });
+    }).then(function(group){
+      if (orderid) {
+        
+      };
     });
   })["catch"](next);
 });
