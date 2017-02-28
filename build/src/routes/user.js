@@ -239,7 +239,6 @@ router.post('/register', function(req, res, next) {
 
 router.post('/login', function(req, res, next) {
 
-
   var password, phone, region, usertype;
   usertype = req.body.usertype;
   region = 86;
@@ -285,7 +284,15 @@ router.post('/login', function(req, res, next) {
               Session.setAuthCookie(res, user.id);
               Session.setNicknameToCache(user.id, phone);
               
-              return res.redirect('/user/get_token');
+              
+              getToken(user.id,user.nickname,user.portraitUri)
+                                    .then(function(token){
+                                      return res.send(new APIResult(200, Utility.encodeResults({
+                                      id: user.id,
+                                      token: token
+                                       })));
+                                    });
+             
               
             });
           });
