@@ -83,12 +83,11 @@ validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
 
-  console.log(req.body);
-
+console.log(req.body);
 
   var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
   orderid = req.body.orderid;
-
+  userIds = req.body.userIds;
   a_name = req.body.name;
   if (orderid) {
     a_name = `${orderid} - `;
@@ -120,7 +119,7 @@ router.post('/create', function(req, res, next) {
       });
 
 
-  } 
+  }  
 
 
   Utility.log('memberIds', memberIds);
@@ -131,8 +130,43 @@ router.post('/create', function(req, res, next) {
   if (memberIds.length > DEFAULT_MAX_GROUP_MEMBER_COUNT) {
     return res.status(400).send("Group's member count is out of max group member count limit (" + DEFAULT_MAX_GROUP_MEMBER_COUNT + ").");
   }
+
+
   currentUserId = Session.getCurrentUserId(req);
   timestamp = Date.now();
+
+
+  if (userIds && userIds.length > 0) {
+      for(var i in userIds ){
+        var mid = userIds[i];
+      
+          User.create({
+            nickname: '',
+            region: 86,
+            passwordHash: '',
+            passwordSalt: '',
+            phone:mid
+          }).then(function(user){
+            var eq = false;
+            for (var j in memberIds){
+              var ji = memberIds[j];
+              if (user.id === ji) {
+                  eq = true;
+                  break;
+              };
+            }
+            if (!eq) {
+              memberIds.push(user.id);
+            };
+          });
+          
+       }
+     
+  
+  };
+
+
+
   return GroupMember.getGroupCount(currentUserId).then(function(count) {
     if (count === MAX_USER_GROUP_OWN_COUNT) {
       return res.send(new APIResult(1000, null, "Current user's group count is out of max user group count limit (" + MAX_USER_GROUP_OWN_COUNT + ")."));
