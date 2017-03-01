@@ -83,6 +83,9 @@ validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
 
+  console.log(req.body);
+
+
   var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
   orderid = req.body.orderid;
 
@@ -105,7 +108,7 @@ router.post('/create', function(req, res, next) {
       }).then(function(ordertogroup){
         if (ordertogroup) {
           return res.send(new APIResult(200, Utility.encodeResults({
-          groupid: ordertogroup.groupid
+          id: ordertogroup.groupid
         })));
         };
         
