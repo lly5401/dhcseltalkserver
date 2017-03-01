@@ -6,3 +6,5 @@ test.coffee
 .DS_Store
 **/*.log
 **/*.bak
+.vscode/launch.json
+build/src/conf.js
