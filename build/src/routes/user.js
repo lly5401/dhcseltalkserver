@@ -414,18 +414,17 @@ router.post('/reset_password', function(req, res, next) {
 
 router.get('/strangers', function (req, res, next ) {
 
-  var rtype,url,deptno,empno, cno;
+  var rtype,url,deptno, no;
 
   rtype = req.query.rtype;
   deptno = req.query.deptno;
-  empno = req.query.empno;
-  cno = req.query.cno;
+  no = req.query.no;
 
   if (rtype === 'E') {
-    url = 'http://172.28.4.241:7030/eaecim/getContactByE.do?deptno='+deptno+'&empno='+empno;
+    url = 'http://172.28.4.241:7030/eaecim/getContactByE.do?deptno='+deptno+'&no='+no;
   } 
    else if (rtype === 'B') {
-    url = 'http://172.28.4.241:7030/eaecim/getContactByB.do?deptno='+deptno+'&cno='+cno;
+    url = 'http://172.28.4.241:7030/eaecim/getContactByB.do?deptno='+deptno+'&no='+no;
   } else {
     return res.status(400).send('获取内部oa用户');
   }
