@@ -110,7 +110,6 @@ router.post('/create', function(req, res, next) {
         };
         
       });
-      memberIds = [52,53,49];
       memberIds = [1,2,20];
       memberIds.forEach(function(memberid){
         encodedMemberIds.push(Utility.encodeResults(memberid));
