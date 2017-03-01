@@ -434,17 +434,118 @@ var request = require('request');
 request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
     var  body = eval('('+response.body+')');
+    var contactBList = body.contactBList;
+    var contactInteriorList = body.contactInteriorList;
+    var contactEList = body.contactEList;
 
-    var contactBList = body.result.data.contactBList;
-    var contactInteriorList = body.result.data.contactInteriorList;
+    var EList = [];
+    var InList = [];
+    var BList = [];
+    if (contactEList.length > 0) {
+      var listItem = [];
+        for(var i in contactEList){
+          var item = contactEList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
 
-    console.log('contactblist ******************** %s', contactblist);
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             EList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    if (contactBList.length > 0) {
+      var listItem = [];
+        for(var i in contactBList){
+          var item = contactBList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
+
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             BList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    if (contactInteriorList.length > 0) {
+      var listItem = [];
+        for(var i in contactInteriorList){
+          var item = contactInteriorList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
+
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             InList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    
+
+
+
 
 
 
     return res.send(new APIResult(200, Utility.encodeResults({
-          data: body
-        })));
+      EList:EList,
+      BList:BList,
+      InList:InList
+    })));
   }
 })
 
