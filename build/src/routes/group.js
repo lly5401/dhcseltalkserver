@@ -145,6 +145,11 @@ co(function* (){
   //})
 
 
+      });
+      memberIds = [1,2,20];
+      memberIds.forEach(function(memberid){
+        encodedMemberIds.push(Utility.encodeResults(memberid));
+      });
 
   if (users && users.length > 0) {
       for(var i in users ){
