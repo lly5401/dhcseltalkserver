@@ -486,7 +486,7 @@ router.get('/strangers/:rtype/:deptno/:no', function(req, res, next) {
             });
 
           EList.push({
-            id: id,
+            id: Utility.encodeId(id),
             userid: userid,
             name: item.name,
             mobile: item.mobile,
