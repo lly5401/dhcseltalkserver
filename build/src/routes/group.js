@@ -145,9 +145,9 @@ co(function* (){
   //})
 
 
-            memberIds.forEach(function(memberid){
-        encodedMemberIds.push(Utility.encodeResults(memberid));
-      });
+      //       memberIds.forEach(function(memberid){
+      //   encodedMemberIds.push(Utility.encodeResults(memberid));
+      // });
 
   if (users && users.length > 0) {
       for(var i in users ){
@@ -168,15 +168,14 @@ co(function* (){
             co(function*(){
 
 
-            var user = (yield User.create({
+            User.create({
             nickname: '1',
             region: 86,
             passwordHash: '1',
             passwordSalt: '1',
             phone:mid
-          }));
-
-          if (user ) {
+          }).then(function(){
+            if (user ) {
             var eq = false;
             for (var j in memberIds){
               var ji = memberIds[j];
@@ -189,6 +188,9 @@ co(function* (){
               memberIds.push(user.id);
             };
           }
+          });
+
+          
 
           });
 
@@ -202,7 +204,7 @@ co(function* (){
 
 
   memberIds.forEach(function(memberid){
-        encodedMemberIds.push(memberid);
+        encodedMemberIds.push(Utility.encodeId(memberid));
       });
 
   Utility.log('memberIds', memberIds);
