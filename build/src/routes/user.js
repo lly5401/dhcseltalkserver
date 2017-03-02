@@ -475,16 +475,13 @@ router.get('/strangers/:rtype/:deptno/:no', function(req, res, next) {
                 phone: 'E_' + item.userid
               },
               attributes: ['id', 'rongCloudToken']
-
             })
             .then(function(user) {
-
               if (user) {
                 token = user.rongCloudToken;
                 id = user.id;
               }
             });
-
           EList.push({
             id: Utility.encodeId(id),
             userid: userid,
@@ -494,7 +491,6 @@ router.get('/strangers/:rtype/:deptno/:no', function(req, res, next) {
           });
         }
       };
-
       return res.send(new APIResult(200, Utility.encodeResults({
         EList: EList
       })));
