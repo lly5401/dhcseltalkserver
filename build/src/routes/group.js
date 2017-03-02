@@ -145,9 +145,7 @@ co(function* (){
   //})
 
 
-      });
-      memberIds = [1,2,20];
-      memberIds.forEach(function(memberid){
+            memberIds.forEach(function(memberid){
         encodedMemberIds.push(Utility.encodeResults(memberid));
       });
 
