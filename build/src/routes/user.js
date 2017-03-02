@@ -268,10 +268,7 @@ router.post('/login', function(req, res, next) {
     phone = 'E_' + phone;
   }
   
-  //console.log('0000000000000000000000');
-  //if (!validator.isMobilePhone(phone, regionMap[region])) {
-    //return res.status(400).send('Invalid region and phone number.');
-  //}
+
   return User.findOne({
     where: {
       //region: region,
@@ -412,7 +409,7 @@ router.post('/reset_password', function(req, res, next) {
 });
 
 
-router.get('/strangers', function (req, res, next ) {
+router.get('/strangers/:rtype/:deptno', function (req, res, next ) {
 
   var rtype,url,deptno, no;
 
