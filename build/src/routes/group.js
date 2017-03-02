@@ -137,7 +137,7 @@ co(function* (){
         
       //});
 
-      memberIds = [52,53,49];
+      memberIds = [52,53,49,78];
       
 
 
@@ -222,8 +222,8 @@ co(function* (){
   memberIds.forEach(function(memberid){
         encodedMemberIds.push(Utility.encodeId(memberid));
       });
-console.log(memberIds);
-console.log(encodedMemberIds);
+
+ 
   Utility.log('memberIds', memberIds);
   Utility.log('encodedMemberIds', encodedMemberIds);
   if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH)) {
