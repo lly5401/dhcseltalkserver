@@ -159,11 +159,13 @@ co(function* (){
           case 'B': mid = 'B_'+mid;
                     break;
         }
-        User.findOne({
+        ( yield User.findOne({
           where : {
             phone : mid
-          }
+          },
+          attributes:['id']
         }).then(function(u){
+          //console.log(u);
           if (!u ) {
             co(function*(){
 
@@ -174,7 +176,7 @@ co(function* (){
             passwordHash: '1',
             passwordSalt: '1',
             phone:mid
-          }).then(function(){
+          }).then(function(user){
             if (user ) {
             var eq = false;
             for (var j in memberIds){
@@ -194,8 +196,22 @@ co(function* (){
 
           });
 
+          } else {
+            //if ( ) {
+            var eq = false;
+            for (var j in memberIds){
+              var ji = memberIds[j];
+              if (u.id === ji) {
+                  eq = true;
+                  break;
+              };
+            }
+            if (!eq) {
+              memberIds.push(u.id);
+            };
+          //}
           }
-        });
+        }));
           
        } 
   }
@@ -206,7 +222,8 @@ co(function* (){
   memberIds.forEach(function(memberid){
         encodedMemberIds.push(Utility.encodeId(memberid));
       });
-
+console.log(memberIds);
+console.log(encodedMemberIds);
   Utility.log('memberIds', memberIds);
   Utility.log('encodedMemberIds', encodedMemberIds);
   if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH, GROUP_NAME_MAX_LENGTH)) {
