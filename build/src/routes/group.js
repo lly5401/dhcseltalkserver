@@ -173,10 +173,10 @@ router.post('/create', function(req, res, next) {
         }).then(function(u) {
           //console.log(u);
           if (!u) {
-            co(function*() {
+            return co(function*() {
 
 
-              User.create({
+              (yield User.create({
                 nickname: '1',
                 region: 86,
                 passwordHash: '1',
@@ -196,7 +196,7 @@ router.post('/create', function(req, res, next) {
                     memberIds.push(user.id);
                   };
                 }
-              });
+              }));
 
 
 
