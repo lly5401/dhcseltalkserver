@@ -255,10 +255,11 @@ router.post('/register', function(req, res, next) {
 
 router.post('/login', function(req, res, next) {
 
-  var password, phone, region, usertype;
+  var password, phone, rphone,region, usertype;
   usertype = req.body.usertype;
   region = 86;
   phone = req.body.phone;
+  rphone = phone;
   password = 1;
        //判断是客户还是内部用户
   if (usertype === 'B') {
@@ -285,6 +286,7 @@ router.post('/login', function(req, res, next) {
             nickname: phone,
             region: region,
             phone: phone,
+            rphone: rphone,
             passwordHash: 'aaa',
             passwordSalt: '222'
           }, {
@@ -411,11 +413,154 @@ router.post('/reset_password', function(req, res, next) {
 
 router.get('/strangers/:rtype/:deptno', function (req, res, next ) {
 
-  var rtype,url,deptno, no;
+  var rtype,url,deptno, no,currentUserId;
 
   rtype = req.query.rtype;
   deptno = req.query.deptno;
-  no = req.query.no;
+  //no = req.query.no;
+
+ return User.findById(session.getCurrentUserId(req,{
+  attributes: ['rphone',]
+ })).then(function(user){
+
+    var no = user.rphone;
+
+
+    
+  if (rtype === 'E') {
+    url = 'http://172.28.4.171:7030/eaecim/getContactByE.do?deptno='+deptno+'&no='+no;
+  } 
+   else if (rtype === 'B') {
+    url = 'http://172.28.4.171:7030/eaecim/getContactByB.do?deptno='+deptno+'&no='+no;
+  } else {
+    return res.status(400).send('获取内部oa用户');
+  }
+
+
+var request = require('request');
+request(url, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+    var  body = eval('('+response.body+')');
+    var contactBList = body.contactBList;
+    var contactInteriorList = body.contactInteriorList;
+    var contactEList = body.contactEList;
+
+    var EList = [];
+    var InList = [];
+    var BList = [];
+    if (contactEList.length > 0) {
+      var listItem = [];
+        for(var i in contactEList){
+          var item = contactEList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
+
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             EList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    if (contactBList.length > 0) {
+      var listItem = [];
+        for(var i in contactBList){
+          var item = contactBList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
+
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             BList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    if (contactInteriorList.length > 0) {
+      var listItem = [];
+        for(var i in contactInteriorList){
+          var item = contactInteriorList[i];
+          var token = '';
+          var userid = item.userid;
+          var id = '';
+          User.findOne({
+            where: {
+              phone : 'E_'+item.userid
+            },
+            attributes: ['id','rongCloudToken']
+            
+          })
+            .then(function(user){
+
+              if (user ) {
+                token = user.rongCloudToken;
+                id = user.id;
+            } 
+            });
+
+             InList.push( {
+              id:id,
+              userid:userid,
+              name: item.name,
+              mobile: item.mobile,
+              token : token
+            });
+        }
+    };
+    
+
+
+
+
+
+
+    return res.send(new APIResult(200, Utility.encodeResults({
+      EList:EList,
+      BList:BList,
+      InList:InList
+    })));
+  }
+})
+
+      
+
+ });
+
+
 
   if (rtype === 'E') {
     url = 'http://172.28.4.171:7030/eaecim/getContactByE.do?deptno='+deptno+'&no='+no;

@@ -261,6 +261,13 @@ User = sequelize.define('users', {
       //isInt: true
     }
   },
+  rphone: {
+    type: Sequelize.STRING(100),
+    allowNull: false,
+    validate: {
+      //isInt: true
+    }
+  },
   nickname: {
     type: Sequelize.STRING(32),
     allowNull: false
