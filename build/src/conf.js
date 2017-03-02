@@ -13,7 +13,7 @@ module.exports = {
   SD_API:'http://172.28.4.241:7030/eaecim/',
   SD_API_TEST:'http://172.28.4.241:7030/eaecim/',
   N3D_KEY: 'qqqaaa',
-  CORS_HOSTS: 'http://test.com:8080',
+  CORS_HOSTS: 'http://172.28.169:8080',
   SERVER_PORT: '8585',
   DB_NAME: 'rim',
   DB_USER: 'root',
