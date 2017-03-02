@@ -421,10 +421,10 @@ router.get('/strangers', function (req, res, next ) {
   no = req.query.no;
 
   if (rtype === 'E') {
-    url = 'http://172.28.4.130:7030/eaecim/getContactByE.do?deptno='+deptno+'&no='+no;
+    url = 'http://172.28.4.171:7030/eaecim/getContactByE.do?deptno='+deptno+'&no='+no;
   } 
    else if (rtype === 'B') {
-    url = 'http://172.28.4.130:7030/eaecim/getContactByB.do?deptno='+deptno+'&no='+no;
+    url = 'http://172.28.4.171:7030/eaecim/getContactByB.do?deptno='+deptno+'&no='+no;
   } else {
     return res.status(400).send('获取内部oa用户');
   }

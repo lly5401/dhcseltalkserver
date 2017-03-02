@@ -65,6 +65,17 @@ sendGroupNotification = function(userId, groupId, operation, data) {
     data: data,
     message: ''
   };
+
+
+
+
+
+
+
+
+
+
+
   Utility.log('Sending GroupNotificationMessage:', JSON.stringify(groupNotificationMessage));
   return new Promise(function(resolve, reject) {
     return rongCloud.message.group.publish('__system__', encodedGroupId, 'RC:GrpNtf', groupNotificationMessage, function(err, resultText) {
@@ -77,6 +88,10 @@ sendGroupNotification = function(userId, groupId, operation, data) {
   });
 };
 
+
+
+
+
 router = express.Router();
 
 validator = sequelize.Validator;
@@ -85,42 +100,107 @@ router.post('/create', function(req, res, next) {
 
 console.log(req.body);
 
+co(function* (){
+
+
+
   var currentUserId, encodedMemberIds, memberIds, name, timestamp,orderid;
-  orderid = req.body.orderid;
-  userIds = req.body.userIds;
-  a_name = req.body.name;
+
+  orderid =   req.body.orderid ;
+  users = req.body.users;
+  name = req.body.name;
   if (orderid) {
-    a_name = `${orderid} - `;
+    name = `${orderid} - `;
   };
 
-  name = Utility.xss(a_name, GROUP_NAME_MAX_LENGTH);
+  name = Utility.xss(name, GROUP_NAME_MAX_LENGTH);
   memberIds = req.body.memberIds;
-  encodedMemberIds = req.body.encodedMemberIds;
-  if (orderid) {
-      encodedMemberIds = [];
+  encodedMemberIds = [];
+
+
+
+    if (orderid) {
+      
       memberIds = null;
-      OrderToGroup.findOne({
+     var ordertogroup = (yield OrderToGroup.findOne({
         where: {
           orderid : orderid
         },
         attributes: ['id','orderid','groupid']
-      }).then(function(ordertogroup){
+      }));
+     //.then(function(ordertogroup){
         if (ordertogroup) {
           return res.send(new APIResult(200, Utility.encodeResults({
           id: ordertogroup.groupid
         })));
         };
         
-      });
+      //});
 
       memberIds = [52,53,49];
-      memberIds.forEach(function(memberid){
+      
+
+
+    }  
+  //})
+
+
+
+  if (users && users.length > 0) {
+      for(var i in users ){
+        var ruser = eval(users[i])
+        var mid = ruser.contactors;
+        switch(ruser.rtype){
+          case 'E': mid = 'E_'+mid;
+                    break;
+          case 'B': mid = 'B_'+mid;
+                    break;
+        }
+        User.findOne({
+          where : {
+            phone : mid
+          }
+        }).then(function(u){
+          if (!u ) {
+            co(function*(){
+
+
+            var user = (yield User.create({
+            nickname: '1',
+            region: 86,
+            passwordHash: '1',
+            passwordSalt: '1',
+            phone:mid
+          }));
+
+          if (user ) {
+            var eq = false;
+            for (var j in memberIds){
+              var ji = memberIds[j];
+              if (user.id === ji) {
+                  eq = true;
+                  break;
+              };
+            }
+            if (!eq) {
+              memberIds.push(user.id);
+            };
+          }
+
+          });
+
+          }
+        });
+          
+       } 
+  }
+
+
+
+
+  memberIds.forEach(function(memberid){
         encodedMemberIds.push(memberid);
       });
-
-
-  }  
-
 
   Utility.log('memberIds', memberIds);
   Utility.log('encodedMemberIds', encodedMemberIds);
@@ -136,34 +216,7 @@ console.log(req.body);
   timestamp = Date.now();
 
 
-  if (userIds && userIds.length > 0) {
-      for(var i in userIds ){
-        var mid = userIds[i];
-      
-          User.create({
-            nickname: '',
-            region: 86,
-            passwordHash: '',
-            passwordSalt: '',
-            phone:mid
-          }).then(function(user){
-            var eq = false;
-            for (var j in memberIds){
-              var ji = memberIds[j];
-              if (user.id === ji) {
-                  eq = true;
-                  break;
-              };
-            }
-            if (!eq) {
-              memberIds.push(user.id);
-            };
-          });
-          
-       }
-     
   
-  };
 
 
 
@@ -172,6 +225,10 @@ console.log(req.body);
       return res.send(new APIResult(1000, null, "Current user's group count is out of max user group count limit (" + MAX_USER_GROUP_OWN_COUNT + ")."));
     }
     return sequelize.transaction(function(t) {
+
+
+
+
       return co(function*() {
         var group;
         group = (yield Group.create({
@@ -242,6 +299,10 @@ console.log(req.body);
       });
     });
   })["catch"](next);
+
+});
+
+
 });
 
 router.post('/add', function(req, res, next) {
