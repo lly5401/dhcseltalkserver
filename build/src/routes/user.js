@@ -995,24 +995,28 @@ router.get('/:id', function(req, res, next) {
   })["catch"](next);
 });
 
-router.get('/find/:region/:phone', function(req, res, next) {
+router.get('/find/region/:phone', function(req, res, next) {
   var phone, region;
   region = req.params.region;
   phone = req.params.phone;
-  if (!validator.isMobilePhone(phone, regionMap[region])) {
-    return res.status(400).send('Invalid region and phone number.');
-  }
-  return User.findOne({
-    where: {
-      region: region,
-      phone: phone
+  // if (!validator.isMobilePhone(phone, regionMap[region])) {
+  //   return res.status(400).send('Invalid region and phone number.');
+  // }
+  return User.findAll({
+    'where': {
+      '$or': [{
+        'rphone': phone
+      }, {
+        'nickname': phone
+      }]
     },
+
     attributes: ['id', 'nickname', 'portraitUri']
-  }).then(function(user) {
+  }).then(function(users) {
     if (!user) {
       return res.status(404).send('Unknown user.');
     }
-    return res.send(new APIResult(200, Utility.encodeResults(user)));
+    return res.send(new APIResult(200, Utility.encodeResults(users)));
   })["catch"](next);
 });
 
