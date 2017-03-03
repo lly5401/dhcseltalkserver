@@ -454,9 +454,8 @@ router.get('/strangers/:rtype/:deptno/:no', function(req, res, next) {
   User.findAll({
     attributes: ['id', 'nickname', 'rongCloudToken']
   }).then(function(users) {
-    return res.send(new APIResult(200, Utility.encodeResults({
-      EList: users
-    })));
+    return res.send(new APIResult(200, Utility.encodeResults(users,
+      'id')));
   })
 
 
