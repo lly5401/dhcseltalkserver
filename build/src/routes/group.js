@@ -77,87 +77,14 @@ sendGroupNotification = function(userId, groupId, operation, data) {
     message: ''
   };
 
-  Utility.log('Sending GroupNotificationMessage:', JSON.stringify(
-    groupNotificationMessage));
-  return new Promise(function(resolve, reject) {
-    return rongCloud.message.group.publish('__system__', encodedGroupId,
-      'RC:GrpNtf', groupNotificationMessage,
-      function(err, resultText) {
-        if (err) {
-          Utility.logError('Error: send group notification failed: %s',
-            err);
-          reject(err);
-        }
-        return resolve(resultText);
-      });
-  });
-};
 
-
-
-router = express.Router();
-
-validator = sequelize.Validator;
-
-router.post('/create', function(req, res, next) {
-
-  console.log(req.body);
-
-  co(function*() {
-
-
-
-    var currentUserId, encodedMemberIds, memberIds, name, timestamp,
-      orderid;
-
-    orderid = req.body.orderid;
-    users = req.body.users;
-    name = req.body.name;
-    if (orderid) {
-      name = `${orderid} - `;
-    };
-
-    name = Utility.xss(name, GROUP_NAME_MAX_LENGTH);
-    memberIds = req.body.memberIds;
-    encodedMemberIds = [];
-
-
-
-    if (orderid) {
-
-      memberIds = null;
-      var ordertogroup = (yield OrderToGroup.findOne({
-        where: {
-          orderid: orderid
-        },
-        attributes: ['id', 'orderid', 'groupid']
-      }));
-      //.then(function(ordertogroup){
-      if (ordertogroup) {
-        return res.send(new APIResult(200, Utility.encodeResults({
-          id: ordertogroup.groupid
-        })));
-      };
-
-      //});
-
-      memberIds = [52, 53, 49, 78];
-
-
-
-    }
-    //})
-
-
-    //       memberIds.forEach(function(memberid){
-    //   encodedMemberIds.push(Utility.encodeResults(memberid));
-    // });
-
+  insertUsers = function(users) {
     if (users && users.length > 0) {
+      var memberids = [];
       for (var i in users) {
-        var ruser = eval(users[i])
-        var mid = ruser.contactors;
-        switch (ruser.rtype) {
+        var user = eval(users[i])
+        var mid = user.userid;
+        switch (user.type) {
           case 'E':
             mid = 'E_' + mid;
             break;
@@ -165,7 +92,7 @@ router.post('/create', function(req, res, next) {
             mid = 'B_' + mid;
             break;
         }
-        (yield User.findOne({
+        User.findOne({
           where: {
             phone: mid
           },
@@ -202,27 +129,145 @@ router.post('/create', function(req, res, next) {
 
             });
 
-          } else {
-            //if ( ) {
-            var eq = false;
-            for (var j in memberIds) {
-              var ji = memberIds[j];
-              if (u.id === ji) {
-                eq = true;
-                break;
-              };
-            }
-            if (!eq) {
-              memberIds.push(u.id);
-            };
-            //}
           }
-        }));
+        });
 
       }
+      return memberids;
     }
+  };
+
+  Utility.log('Sending GroupNotificationMessage:', JSON.stringify(
+    groupNotificationMessage));
+  return new Promise(function(resolve, reject) {
+    return rongCloud.message.group.publish('__system__', encodedGroupId,
+      'RC:GrpNtf', groupNotificationMessage,
+      function(err, resultText) {
+        if (err) {
+          Utility.logError('Error: send group notification failed: %s',
+            err);
+          reject(err);
+        }
+        return resolve(resultText);
+      });
+  });
+};
 
 
+
+router = express.Router();
+
+validator = sequelize.Validator;
+
+router.post('/create', function(req, res, next) {
+
+  console.log(req.body);
+
+  co(function*() {
+
+
+
+    var currentUserId, encodedMemberIds, memberIds, name, timestamp,
+      orderid, url, datatype, deptno;
+
+    orderid = req.body.orderid;
+    users = req.body.users;
+    name = req.body.name;
+    datatype = 1;
+    deptno = req.body.deptno;
+    if (orderid) {
+      name = `${orderid} - `;
+    };
+
+    name = Utility.xss(name, GROUP_NAME_MAX_LENGTH);
+    memberIds = req.body.memberIds;
+    encodedMemberIds = [];
+
+    var memids = [];
+
+    if (orderid) {
+
+      memberIds = null;
+      var ordertogroup = (yield OrderToGroup.findOne({
+        where: {
+          orderid: orderid
+        },
+        attributes: ['id', 'orderid', 'groupid']
+      }));
+      //.then(function(ordertogroup){
+      if (ordertogroup) {
+        return res.send(new APIResult(200, Utility.encodeResults({
+          id: ordertogroup.groupid
+        })));
+      };
+
+      //});
+
+      //memberIds = [52, 53, 49, 78];
+
+      url = Config.SD_API_TEST + '/getDataContact.do?deptno=' + deptno +
+        '&datano=' + orderid + '&datatype=' + datatype;
+      var request = require('request');
+      request(url, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          var body = eval('(' + response.body + ')');
+          var contactEList = body.contactList;
+          var EList = [];
+          if (contactEList.length > 0) {
+            var listItem = [];
+            for (var i in contactEList) {
+              var item = contactEList[i];
+              var token = '';
+              var userid = item.userid;
+              var id = '';
+              User.findOne({
+                  where: {
+                    phone: 'E_' + item.userid
+                  },
+                  attributes: ['id', 'rongCloudToken']
+                })
+                .then(function(user) {
+                  if (user) {
+                    id = user.id;
+                  } else {
+                    User.create({
+                      nickname: '1',
+                      region: 86,
+                      passwordHash: '1',
+                      passwordSalt: '1',
+                      phone: userid
+                    }).then(function(u) {
+                      memids.push(u.id);
+                    })
+                  }
+                });
+
+              memids.push(id);
+            }
+
+          };
+
+        }
+      });
+
+
+
+    } else {
+      memids = insertUsers(users);
+    }
+    memids.forEach(function(mem) {
+      var eq = false;
+      for (var j in memberIds) {
+        var ji = memberIds[j];
+        if (mem.id === ji) {
+          eq = true;
+          break;
+        };
+      }
+      if (!eq) {
+        memberIds.push(u.id);
+      };
+    });
 
     memberIds.forEach(function(memberid) {
       encodedMemberIds.push(Utility.encodeId(memberid));
@@ -230,7 +275,8 @@ router.post('/create', function(req, res, next) {
 
 
     Utility.log('memberIds', memberIds);
-    Utility.log('encodedMemberIds', encodedMemberIds);
+    Utility.log('encodedMemberIds',
+      encodedMemberIds);
     if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH,
         GROUP_NAME_MAX_LENGTH)) {
       return res.status(400).send(
