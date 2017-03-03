@@ -252,21 +252,28 @@ router.post('/create', function(req, res, next) {
 
 
     } else {
+
+
       memids = insertUsers(users);
     }
-    memids.forEach(function(mem) {
-      var eq = false;
-      for (var j in memberIds) {
-        var ji = memberIds[j];
-        if (mem.id === ji) {
-          eq = true;
-          break;
+
+
+    if (memids && memids.length > 0) {
+      memids.forEach(function(mem) {
+        var eq = false;
+        for (var j in memberIds) {
+          var ji = memberIds[j];
+          if (mem.id === ji) {
+            eq = true;
+            break;
+          };
+        }
+        if (!eq) {
+          memberIds.push(u.id);
         };
-      }
-      if (!eq) {
-        memberIds.push(u.id);
-      };
-    });
+      });
+    }
+
 
     memberIds.forEach(function(memberid) {
       encodedMemberIds.push(Utility.encodeId(memberid));
