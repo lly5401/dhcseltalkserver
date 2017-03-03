@@ -1,4 +1,4 @@
-var APIResult, Blacklist, OrderToGroup, Config, DEFAULT_MAX_GROUP_MEMBER_COUNT,
+var APIResult, Blacklist, OrderGroup, Config, DEFAULT_MAX_GROUP_MEMBER_COUNT,
   DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER,
   GROUP_MEMBER_DISPLAY_NAME_MAX_LENGTH, GROUP_MEMBER_DISPLAY_NAME_MIN_LENGTH,
   GROUP_NAME_MAX_LENGTH, GROUP_NAME_MIN_LENGTH, GROUP_OPERATION_ADD,
@@ -188,7 +188,7 @@ router.post('/create', function(req, res, next) {
     if (orderid) {
 
       memberIds = null;
-      var ordertogroup = (yield OrderToGroup.findOne({
+      var ordertogroup = (yield OrderGroup.findOne({
         where: {
           orderid: orderid
         },
@@ -1090,7 +1090,7 @@ router.get('/:id/members', function(req, res, next) {
     attributes: ['displayName', 'role', 'createdAt', 'updatedAt'],
     include: {
       model: User,
-      attributes: ['id', 'nickname', 'portraitUri']
+      attributes: ['id', 'nickname', 'portraitUri', 'rongCloudToken']
     }
   }).then(function(groupMembers) {
     var isInGroup;

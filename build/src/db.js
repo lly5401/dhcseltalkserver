@@ -1,4 +1,8 @@
-var Blacklist, Config, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER, Group, GroupMember, GroupSync, HTTPError, LoginLog, Sequelize, User,OrderToGroup, Utility, VerificationCode, _, co, dataVersionClassMethods, friendshipClassMethods, groupClassMethods, groupMemberClassMethods, sequelize, userClassMethods, verificationCodeClassMethods;
+var Blacklist, Config, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER,
+  Group, GroupMember, GroupSync, HTTPError, LoginLog, Sequelize, User,
+  OrderToGroup, Utility, VerificationCode, _, co, dataVersionClassMethods,
+  friendshipClassMethods, groupClassMethods, groupMemberClassMethods, sequelize,
+  userClassMethods, verificationCodeClassMethods;
 
 Sequelize = require('sequelize');
 
@@ -89,6 +93,8 @@ friendshipClassMethods = {
   }
 };
 
+
+
 groupClassMethods = {
   getInfo: function(groupId) {
     return Group.findById(groupId, {
@@ -100,7 +106,8 @@ groupClassMethods = {
 groupMemberClassMethods = {
   bulkUpsert: function(groupId, memberIds, timestamp, transaction, creatorId) {
     return co(function*() {
-      var createGroupMembers, groupMembers, roleFlag, updateGroupMemberIds;
+      var createGroupMembers, groupMembers, roleFlag,
+        updateGroupMemberIds;
       groupMembers = (yield GroupMember.unscoped().findAll({
         where: {
           groupId: groupId
@@ -123,7 +130,9 @@ groupMemberClassMethods = {
         groupMembers.some(function(groupMember) {
           if (memberId === groupMember.memberId) {
             if (!groupMember.isDeleted) {
-              throw new HTTPError('Should not add exist member to the group.', 400);
+              throw new HTTPError(
+                'Should not add exist member to the group.',
+                400);
             }
             return isUpdateMember = true;
           } else {
@@ -202,22 +211,25 @@ dataVersionClassMethods = {
     });
   },
   updateAllFriendshipVersion: function(userId, timestamp) {
-    return sequelize.query('UPDATE data_versions d JOIN friendships f ON d.userId = f.userId AND f.friendId = ? AND f.status = 20 SET d.friendshipVersion = ?', {
-      replacements: [userId, timestamp],
-      type: Sequelize.QueryTypes.UPDATE
-    });
+    return sequelize.query(
+      'UPDATE data_versions d JOIN friendships f ON d.userId = f.userId AND f.friendId = ? AND f.status = 20 SET d.friendshipVersion = ?', {
+        replacements: [userId, timestamp],
+        type: Sequelize.QueryTypes.UPDATE
+      });
   },
   updateGroupVersion: function(groupId, timestamp) {
-    return sequelize.query('UPDATE data_versions d JOIN group_members g ON d.userId = g.memberId AND g.groupId = ? AND g.isDeleted = 0 SET d.groupVersion = ?', {
-      replacements: [groupId, timestamp],
-      type: Sequelize.QueryTypes.UPDATE
-    });
+    return sequelize.query(
+      'UPDATE data_versions d JOIN group_members g ON d.userId = g.memberId AND g.groupId = ? AND g.isDeleted = 0 SET d.groupVersion = ?', {
+        replacements: [groupId, timestamp],
+        type: Sequelize.QueryTypes.UPDATE
+      });
   },
   updateGroupMemberVersion: function(groupId, timestamp) {
-    return sequelize.query('UPDATE data_versions d JOIN group_members g ON d.userId = g.memberId AND g.groupId = ? AND g.isDeleted = 0 SET d.groupVersion = ?, d.groupMemberVersion = ?', {
-      replacements: [groupId, timestamp, timestamp],
-      type: Sequelize.QueryTypes.UPDATE
-    });
+    return sequelize.query(
+      'UPDATE data_versions d JOIN group_members g ON d.userId = g.memberId AND g.groupId = ? AND g.isDeleted = 0 SET d.groupVersion = ?, d.groupMemberVersion = ?', {
+        replacements: [groupId, timestamp, timestamp],
+        type: Sequelize.QueryTypes.UPDATE
+      });
   }
 };
 
@@ -304,12 +316,10 @@ User = sequelize.define('users', {
 }, {
   classMethods: userClassMethods,
   paranoid: true,
-  indexes: [
-    {
-      unique: true,
-      fields: ['region', 'phone']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['region', 'phone']
+  }]
 });
 
 Blacklist = sequelize.define('blacklists', {
@@ -338,15 +348,13 @@ Blacklist = sequelize.define('blacklists', {
     comment: '时间戳（版本号）'
   }
 }, {
-  indexes: [
-    {
-      unique: true,
-      fields: ['userId', 'friendId']
-    }, {
-      method: 'BTREE',
-      fields: ['userId', 'timestamp']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['userId', 'friendId']
+  }, {
+    method: 'BTREE',
+    fields: ['userId', 'timestamp']
+  }]
 });
 
 Blacklist.belongsTo(User, {
@@ -390,38 +398,19 @@ Friendship = sequelize.define('friendships', {
   }
 }, {
   classMethods: friendshipClassMethods,
-  indexes: [
-    {
-      unique: true,
-      fields: ['userId', 'friendId']
-    }, {
-      method: 'BTREE',
-      fields: ['userId', 'timestamp']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['userId', 'friendId']
+  }, {
+    method: 'BTREE',
+    fields: ['userId', 'timestamp']
+  }]
 });
 
 Friendship.belongsTo(User, {
   foreignKey: 'friendId',
   constraints: false
 });
-
-OrderToGroup = sequelize.define('ordertogroup', {
-  id: {
-    type: Sequelize.INTEGER.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
-  orderid: {
-    type: Sequelize.STRING(50),
-    allowNull: false
-  },
-  groupid: {
-    type: Sequelize.INTEGER.UNSIGNED,
-    allowNull: false
-  }
-});
-
 
 
 
@@ -464,12 +453,31 @@ Group = sequelize.define('groups', {
 }, {
   classMethods: groupClassMethods,
   paranoid: true,
-  indexes: [
-    {
-      unique: true,
-      fields: ['id', 'timestamp']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['id', 'timestamp']
+  }]
+});
+
+OrderGroup = sequelize.define('order_groups', {
+  id: {
+    type: Sequelize.INTEGER.UNSIGNED,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  orderid: {
+    type: Sequelize.STRING(50),
+    allowNull: false
+  },
+  groupId: {
+    type: Sequelize.INTEGER.UNSIGNED,
+    allowNull: false
+  }
+});
+
+OrderGroup.belongsTo(Group, {
+  foreignKey: 'groupId',
+  constraints: false
 });
 
 GroupMember = sequelize.define('group_members', {
@@ -514,15 +522,13 @@ GroupMember = sequelize.define('group_members', {
       isDeleted: false
     }
   },
-  indexes: [
-    {
-      unique: true,
-      fields: ['groupId', 'memberId', 'isDeleted']
-    }, {
-      method: 'BTREE',
-      fields: ['memberId', 'timestamp']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['groupId', 'memberId', 'isDeleted']
+  }, {
+    method: 'BTREE',
+    fields: ['memberId', 'timestamp']
+  }]
 });
 
 GroupMember.belongsTo(User, {
@@ -631,12 +637,10 @@ VerificationCode = sequelize.define('verification_codes', {
   }
 }, {
   classMethods: verificationCodeClassMethods,
-  indexes: [
-    {
-      unique: true,
-      fields: ['region', 'phone']
-    }
-  ]
+  indexes: [{
+    unique: true,
+    fields: ['region', 'phone']
+  }]
 });
 
 LoginLog = sequelize.define('login_logs', {
@@ -678,4 +682,6 @@ LoginLog = sequelize.define('login_logs', {
   updatedAt: false
 });
 
-module.exports = [sequelize, User, Blacklist, Friendship, Group, GroupMember, GroupSync, DataVersion, VerificationCode, LoginLog,OrderToGroup];
+module.exports = [sequelize, User, Blacklist, Friendship, Group, GroupMember,
+  GroupSync, DataVersion, VerificationCode, LoginLog, OrderToGroup
+];

@@ -329,7 +329,7 @@ router.post('/login', function(req, res, next) {
                 return res.send(new APIResult(200,
                   Utility.encodeResults({
                     id: user.id,
-                    token: token
+                    rongCloudToken: token
                   })));
               });
 
