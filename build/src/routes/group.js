@@ -194,16 +194,12 @@ router.post('/create', function(req, res, next) {
         },
         attributes: ['id', 'orderid', 'groupid']
       }));
-      //.then(function(ordertogroup){
       if (orderGroup) {
         return res.send(new APIResult(200, Utility.encodeResults({
           id: orderGroup.groupid
         })));
       };
 
-      //});
-
-      //memberIds = [52, 53, 49, 78];
 
       url = Config.SD_API_TEST + '/getDataContact.do?deptno=' + deptno +
         '&datano=' + orderid + '&datatype=' + datatype;
@@ -211,7 +207,7 @@ router.post('/create', function(req, res, next) {
       request(url, function(error, response, body) {
         if (!error && response.statusCode == 200) {
           var body = eval('(' + response.body + ')');
-          var contactEList = body.contactList;
+          var contactEList = body.contactEList;
           if (contactEList && contactEList.length > 0) {
             var listItem = [];
             for (var i in contactEList) {
@@ -223,18 +219,19 @@ router.post('/create', function(req, res, next) {
                   where: {
                     phone: 'E_' + item.userid
                   },
-                  attributes: ['id', 'rongCloudToken']
+                  attributes: ['id']
                 })
                 .then(function(user) {
                   if (user) {
                     id = user.id;
                   } else {
                     User.create({
-                      nickname: '1',
+                      nickname: item.name,
                       region: 86,
                       passwordHash: '1',
                       passwordSalt: '1',
-                      phone: userid
+                      phone: userid,
+                      mobile: item.mobile
                     }).then(function(u) {
                       memids.push(u.id);
                     })
@@ -249,11 +246,7 @@ router.post('/create', function(req, res, next) {
         }
       });
 
-
-
     } else {
-
-
       memids = insertUsers(users);
     }
 

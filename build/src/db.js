@@ -284,6 +284,10 @@ User = sequelize.define('users', {
     type: Sequelize.STRING(32),
     allowNull: false
   },
+  mobile: {
+    type: Sequelize.STRING(11),
+    allowNull: true
+  },
   portraitUri: {
     type: Sequelize.STRING(256),
     allowNull: false,
