@@ -1,6 +1,6 @@
 var Blacklist, Config, DataVersion, Friendship, GROUP_CREATOR, GROUP_MEMBER,
   Group, GroupMember, GroupSync, HTTPError, LoginLog, Sequelize, User,
-  OrderToGroup, Utility, VerificationCode, _, co, dataVersionClassMethods,
+  OrderGroup, Utility, VerificationCode, _, co, dataVersionClassMethods,
   friendshipClassMethods, groupClassMethods, groupMemberClassMethods, sequelize,
   userClassMethods, verificationCodeClassMethods;
 
@@ -683,5 +683,5 @@ LoginLog = sequelize.define('login_logs', {
 });
 
 module.exports = [sequelize, User, Blacklist, Friendship, Group, GroupMember,
-  GroupSync, DataVersion, VerificationCode, LoginLog, OrderToGroup
+  GroupSync, DataVersion, VerificationCode, LoginLog, OrderGroup
 ];

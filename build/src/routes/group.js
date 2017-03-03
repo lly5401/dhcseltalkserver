@@ -29,7 +29,7 @@ HTTPError = require('../util/util').HTTPError;
 ref = require('../db'), sequelize = ref[0], User = ref[1], Blacklist = ref[2],
   Friendship = ref[3], Group = ref[4], GroupMember = ref[5], GroupSync = ref[6],
   DataVersion = ref[7], VerificationCode = ref[8], LoginLog = ref[9],
-  OrderToGroup = ref[10];
+  OrderGroup = ref[10];
 
 GROUP_CREATOR = 0;
 
@@ -188,16 +188,16 @@ router.post('/create', function(req, res, next) {
     if (orderid) {
 
       memberIds = null;
-      var ordertogroup = (yield OrderGroup.findOne({
+      var orderGroup = (yield OrderGroup.findOne({
         where: {
           orderid: orderid
         },
         attributes: ['id', 'orderid', 'groupid']
       }));
       //.then(function(ordertogroup){
-      if (ordertogroup) {
+      if (orderGroup) {
         return res.send(new APIResult(200, Utility.encodeResults({
-          id: ordertogroup.groupid
+          id: orderGroup.groupid
         })));
       };
 
@@ -319,7 +319,7 @@ router.post('/create', function(req, res, next) {
           (yield GroupMember.bulkUpsert(group.id, memberIds,
             timestamp, t, currentUserId));
           if (orderid) {
-            (yield OrderToGroup.create({
+            (yield OrderGroup.create({
               orderid: orderid,
               groupid: group.id
             }, {
