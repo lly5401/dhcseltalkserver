@@ -451,51 +451,60 @@ router.get('/strangers/:rtype/:deptno/:no', function(req, res, next) {
   deptno = req.params.deptno;
   no = req.params.no;
 
+  User.findAll({
+    attributes: ['id', 'nickname', 'rongCloudToken']
+  }).then(function(users) {
+    return res.send(new APIResult(200, Utility.encodeResults({
+      EList: users
+    })));
+  })
+
+
   // return User.findById(Session.getCurrentUserId(req,{
   //  attributes: ['rphone']
   // })).then(function(user){
   //    var no = user.rphone;
-  url = Config.SD_API_TEST + '/getContact.do?deptno=' + deptno + '&no=' +
-    no + '&type=' + rtype;
-  var request = require('request');
-  request(url, function(error, response, body) {
-    if (!error && response.statusCode == 200) {
-      var body = eval('(' + response.body + ')');
-      var contactEList = body.contactList;
-      var EList = [];
-      if (contactEList.length > 0) {
-        var listItem = [];
-        for (var i in contactEList) {
-          var item = contactEList[i];
-          var token = '';
-          var userid = item.userid;
-          var id = '';
-          User.findOne({
-              where: {
-                phone: 'E_' + item.userid
-              },
-              attributes: ['id', 'rongCloudToken']
-            })
-            .then(function(user) {
-              if (user) {
-                token = user.rongCloudToken;
-                id = user.id;
-              }
-            });
-          EList.push({
-            id: Utility.encodeId(id),
-            userid: userid,
-            name: item.name,
-            mobile: item.mobile,
-            token: token
-          });
-        }
-      };
-      return res.send(new APIResult(200, Utility.encodeResults({
-        EList: EList
-      })));
-    }
-  });
+  // url = Config.SD_API_TEST + '/getContact.do?deptno=' + deptno + '&no=' +
+  //   no + '&type=' + rtype;
+  // var request = require('request');
+  // request(url, function(error, response, body) {
+  //   if (!error && response.statusCode == 200) {
+  //     var body = eval('(' + response.body + ')');
+  //     var contactEList = body.contactList;
+  //     var EList = [];
+  //     if (contactEList.length > 0) {
+  //       var listItem = [];
+  //       for (var i in contactEList) {
+  //         var item = contactEList[i];
+  //         var token = '';
+  //         var userid = item.userid;
+  //         var id = '';
+  //         User.findOne({
+  //             where: {
+  //               phone: 'E_' + item.userid
+  //             },
+  //             attributes: ['id', 'rongCloudToken']
+  //           })
+  //           .then(function(user) {
+  //             if (user) {
+  //               token = user.rongCloudToken;
+  //               id = user.id;
+  //             }
+  //           });
+  //         EList.push({
+  //           id: Utility.encodeId(id),
+  //           userid: userid,
+  //           name: item.name,
+  //           mobile: item.mobile,
+  //           token: token
+  //         });
+  //       }
+  //     };
+  //     return res.send(new APIResult(200, Utility.encodeResults({
+  //       EList: EList
+  //     })));
+  //   }
+  // });
 
 
   //});
