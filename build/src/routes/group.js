@@ -230,11 +230,12 @@ router.post('/create', function(req, res, next) {
                       region: 86,
                       passwordHash: '1',
                       passwordSalt: '1',
-                      phone: userid,
-                      mobile: item.mobile
+                      phone: 'E_' + userid,
+                      mobile: item.mobile,
+                      rphone: userid
                     }).then(function(u) {
                       memids.push(u.id);
-                    })
+                    });
                   }
                 });
 
