@@ -212,8 +212,7 @@ router.post('/create', function(req, res, next) {
         if (!error && response.statusCode == 200) {
           var body = eval('(' + response.body + ')');
           var contactEList = body.contactList;
-          var EList = [];
-          if (contactEList.length > 0) {
+          if (contactEList && contactEList.length > 0) {
             var listItem = [];
             for (var i in contactEList) {
               var item = contactEList[i];
