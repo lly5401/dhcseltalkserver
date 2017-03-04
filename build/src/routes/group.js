@@ -8,6 +8,15 @@ var APIResult, Blacklist, OrderGroup, Config, DEFAULT_MAX_GROUP_MEMBER_COUNT,
   PORTRAIT_URI_MIN_LENGTH, Session, User, Utility, VerificationCode, _, co,
   express, ref, rongCloud, router, sendGroupNotification, sequelize, validator;
 
+
+var Promise = require('bluebird');
+
+var request = require('request');
+
+
+const requestAsync = Promise.promisify(request);
+
+
 express = require('express');
 
 co = require('co');
@@ -185,6 +194,8 @@ router.post('/create', function(req, res, next) {
 
     var memids = [];
 
+
+
     if (orderid) {
 
       memberIds = null;
@@ -203,46 +214,97 @@ router.post('/create', function(req, res, next) {
 
       url = Config.SD_API_TEST + '/getDataContact.do?deptno=' + deptno +
         '&datano=' + orderid + '&datatype=' + datatype;
-      var request = require('request');
+      var data = (yield requestAsync('http://baidu.com'));
+      console.log('aaaaaaaaa%s', data);
+
       request(url, function(error, response, body) {
+        console.log('aasdfsdfsdfsdfdsfds');
         if (!error && response.statusCode == 200) {
           var body = eval('(' + response.body + ')');
           var contactEList = body.contactEList;
           if (contactEList && contactEList.length > 0) {
             var listItem = [];
+
             for (var i in contactEList) {
-              var item = contactEList[i];
-              var token = '';
-              var userid = item.userid;
-              var id = '';
-              User.findOne({
+              co(function*() {
+                var item = contactEList[i];
+                var token = '';
+                var userid = item.userid;
+                var id = '';
+
+
+                var user = (yield User.findOne({
                   where: {
                     phone: 'E_' + item.userid
                   },
                   attributes: ['id']
-                })
-                .then(function(user) {
-                  if (user) {
-                    id = user.id;
-                  } else {
-                    User.create({
-                      nickname: item.name,
-                      region: 86,
-                      passwordHash: '1',
-                      passwordSalt: '1',
-                      phone: 'E_' + userid,
-                      mobile: item.mobile,
-                      rphone: userid
-                    }).then(function(u) {
-                      memids.push(u.id);
-                    });
-                  }
-                });
+                }));
 
-              memids.push(id);
+                if (user) {
+                  id = user.id;
+                } else {
+                  var u = (yield User.create({
+                    nickname: item.name,
+                    region: 86,
+                    passwordHash: '1',
+                    passwordSalt: '1',
+                    phone: 'E_' + userid,
+                    mobile: item.mobile,
+                    rphone: userid
+                  }));
+                  memids.push(u.id);
+                }
+
+
+                memids.push(id);
+              });
             }
 
+
+
           };
+
+          // var contactInteriorList = body.contactInteriorList;
+          // if (contactInteriorList && contactInteriorList.length > 0) {
+          //   var listItem = [];
+          //
+          //   for (var i in contactEList) {
+          //     co(function*() {
+          //       var item = contactEList[i];
+          //       var token = '';
+          //       var userid = item.userid;
+          //       var id = '';
+          //
+          //
+          //       var user = (yield User.findOne({
+          //         where: {
+          //           phone: 'E_' + item.userid
+          //         },
+          //         attributes: ['id']
+          //       }));
+          //
+          //       if (user) {
+          //         id = user.id;
+          //       } else {
+          //         var u = (yield User.create({
+          //           nickname: item.name,
+          //           region: 86,
+          //           passwordHash: '1',
+          //           passwordSalt: '1',
+          //           phone: 'E_' + userid,
+          //           mobile: item.mobile,
+          //           rphone: userid
+          //         }));
+          //         memids.push(u.id);
+          //       }
+          //
+          //
+          //       memids.push(id);
+          //     });
+          //   }
+          //
+          //
+          // };
 
         }
       });
@@ -251,6 +313,7 @@ router.post('/create', function(req, res, next) {
       memids = insertUsers(users);
     }
 
+    console.log('mmmmmmmm');
 
     if (memids && memids.length > 0) {
       memids.forEach(function(mem) {
@@ -267,6 +330,7 @@ router.post('/create', function(req, res, next) {
         };
       });
     }
+
 
 
     memberIds.forEach(function(memberid) {
