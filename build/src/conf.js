@@ -11,7 +11,7 @@ module.exports = {
   QINIU_BUCKET_NAME: '<-- 此处填写七牛创建的空间名称 -->',
   QINIU_BUCKET_DOMAIN: '<-- 此处填写七牛创建的空间域名 -->',
   SD_API: 'http://172.28.4.241:7030/eaecim/',
-  SD_API_TEST: 'http://172.28.4.106:7030/eaecim/',
+  SD_API_TEST: 'http://172.28.5.94:7030/eaecim/',
   N3D_KEY: 'qqqaaa',
   CORS_HOSTS: 'http://172.28.4.169:8080',
   SERVER_PORT: '8585',

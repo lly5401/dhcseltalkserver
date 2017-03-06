@@ -101,6 +101,8 @@ sendGroupNotification = function(userId, groupId, operation, data) {
             mid = 'B_' + mid;
             break;
         }
+
+
         User.findOne({
           where: {
             phone: mid
@@ -213,108 +215,107 @@ router.post('/create', function(req, res, next) {
 
 
       url = Config.SD_API_TEST + '/getDataContact.do?deptno=' + deptno +
-        '&datano=' + orderid + '&datatype=' + datatype;
-      var data = (yield requestAsync('http://baidu.com'));
-      console.log('aaaaaaaaa%s', data);
+        '&datano=' + orderid + '&datatype=1';
+      var response = (yield requestAsync(url));
+      console.log('response body :' + response.body);
 
-      request(url, function(error, response, body) {
-        console.log('aasdfsdfsdfsdfdsfds');
-        if (!error && response.statusCode == 200) {
-          var body = eval('(' + response.body + ')');
-          var contactEList = body.contactEList;
-          if (contactEList && contactEList.length > 0) {
-            var listItem = [];
-
+      if (response.statusCode == 200) {
+        var body = eval('(' + response.body + ')');
+        var contactEList = body.contactEList;
+        if (contactEList && contactEList.length > 0) {
+          var listItem = [];
+          console.log('contacetlist:' + contactEList.length);
+          co(function*() {
             for (var i in contactEList) {
-              co(function*() {
-                var item = contactEList[i];
-                var token = '';
-                var userid = item.userid;
-                var id = '';
 
+              var item = contactEList[i];
+              var token = '';
+              var userid = item.userid;
+              var id = '';
 
-                var user = (yield User.findOne({
-                  where: {
-                    phone: 'E_' + item.userid
-                  },
-                  attributes: ['id']
+              console.log('user' + item.userid);
+              var user = (yield User.findOne({
+                where: {
+                  phone: 'E_' + item.userid
+                },
+                attributes: ['id']
+              }));
+              console.log('found user: ' + user.id);
+              if (user) {
+                id = user.id;
+                console.log('id:' + id);
+              } else {
+                var u = (yield User.create({
+                  nickname: item.name,
+                  region: 86,
+                  passwordHash: '1',
+                  passwordSalt: '1',
+                  phone: 'E_' + userid,
+                  mobile: item.mobile,
+                  rphone: userid
                 }));
+                memids.push(u.id);
+              }
 
-                if (user) {
-                  id = user.id;
-                } else {
-                  var u = (yield User.create({
-                    nickname: item.name,
-                    region: 86,
-                    passwordHash: '1',
-                    passwordSalt: '1',
-                    phone: 'E_' + userid,
-                    mobile: item.mobile,
-                    rphone: userid
-                  }));
-                  memids.push(u.id);
-                }
+              console.log('userid :' + id);
+              memids.push(id);
 
-
-                memids.push(id);
-              });
             }
+          });
 
 
+        };
 
-          };
+        // var contactInteriorList = body.contactInteriorList;
+        // if (contactInteriorList && contactInteriorList.length > 0) {
+        //   var listItem = [];
+        //
+        //   for (var i in contactEList) {
+        //     co(function*() {
+        //       var item = contactEList[i];
+        //       var token = '';
+        //       var userid = item.userid;
+        //       var id = '';
+        //
+        //
+        //       var user = (yield User.findOne({
+        //         where: {
+        //           phone: 'E_' + item.userid
+        //         },
+        //         attributes: ['id']
+        //       }));
+        //
+        //       if (user) {
+        //         id = user.id;
+        //       } else {
+        //         var u = (yield User.create({
+        //           nickname: item.name,
+        //           region: 86,
+        //           passwordHash: '1',
+        //           passwordSalt: '1',
+        //           phone: 'E_' + userid,
+        //           mobile: item.mobile,
+        //           rphone: userid
+        //         }));
+        //         memids.push(u.id);
+        //       }
+        //
+        //
+        //       memids.push(id);
+        //     });
+        //   }
+        //
+        //
+        // };
 
-          // var contactInteriorList = body.contactInteriorList;
-          // if (contactInteriorList && contactInteriorList.length > 0) {
-          //   var listItem = [];
-          //
-          //   for (var i in contactEList) {
-          //     co(function*() {
-          //       var item = contactEList[i];
-          //       var token = '';
-          //       var userid = item.userid;
-          //       var id = '';
-          //
-          //
-          //       var user = (yield User.findOne({
-          //         where: {
-          //           phone: 'E_' + item.userid
-          //         },
-          //         attributes: ['id']
-          //       }));
-          //
-          //       if (user) {
-          //         id = user.id;
-          //       } else {
-          //         var u = (yield User.create({
-          //           nickname: item.name,
-          //           region: 86,
-          //           passwordHash: '1',
-          //           passwordSalt: '1',
-          //           phone: 'E_' + userid,
-          //           mobile: item.mobile,
-          //           rphone: userid
-          //         }));
-          //         memids.push(u.id);
-          //       }
-          //
-          //
-          //       memids.push(id);
-          //     });
-          //   }
-          //
-          //
-          // };
+      }
 
-        }
-      });
 
     } else {
-      memids = insertUsers(users);
+      //(yield memids = insertUsers(users));
     }
 
-    console.log('mmmmmmmm');
-
+    console.log('check memids:' + memids);
     if (memids && memids.length > 0) {
       memids.forEach(function(mem) {
         var eq = false;
@@ -339,7 +340,10 @@ router.post('/create', function(req, res, next) {
 
 
     Utility.log('memberIds', memberIds);
-    Utility.log('encodedMemberIds',
+    Utility.log('encodedMemberIds', encodedMemberIds);
+
+
+    console.log('memberids : ' + memberIds + ' encodedMemberIds :' +
       encodedMemberIds);
     if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH,
         GROUP_NAME_MAX_LENGTH)) {
@@ -354,11 +358,13 @@ router.post('/create', function(req, res, next) {
 
 
     currentUserId = Session.getCurrentUserId(req);
-    timestamp = Date.now();
+    timestamp = Date
+      .now();
 
 
 
-    return GroupMember.getGroupCount(currentUserId).then(function(count) {
+    return GroupMember.getGroupCount(currentUserId).then(function(
+      count) {
       if (count === MAX_USER_GROUP_OWN_COUNT) {
         return res.send(new APIResult(1000, null,
           "Current user's group count is out of max user group count limit (" +
@@ -381,7 +387,8 @@ router.post('/create', function(req, res, next) {
           }));
           Utility.log('Group %s created by %s', group.id,
             currentUserId);
-          (yield GroupMember.bulkUpsert(group.id, memberIds,
+          (yield GroupMember.bulkUpsert(group.id,
+            memberIds,
             timestamp, t, currentUserId));
           if (orderid) {
             (yield OrderGroup.create({
@@ -396,48 +403,51 @@ router.post('/create', function(req, res, next) {
       }).then(function(group) {
         return DataVersion.updateGroupMemberVersion(group.id,
           timestamp).then(function() {
-          rongCloud.group.create(encodedMemberIds, Utility.encodeId(
-            group.id), name, function(err, resultText) {
-            var result, success;
-            if (err) {
-              Utility.logError(
-                'Error: create group failed on IM server, error: %s',
-                err);
-            }
-            result = JSON.parse(resultText);
-            success = result.code === 200;
-            if (success) {
+          rongCloud.group.create(encodedMemberIds,
+            Utility.encodeId(
+              group.id), name,
+            function(err, resultText) {
+              var result, success;
+              if (err) {
+                Utility.logError(
+                  'Error: create group failed on IM server, error: %s',
+                  err);
+              }
+              result = JSON.parse(resultText);
+              success = result.code === 200;
+              if (success) {
 
 
 
-              return Session.getCurrentUserNickname(
-                currentUserId, User).then(function(
-                nickname) {
-                return sendGroupNotification(
-                  currentUserId, group.id,
-                  GROUP_OPERATION_CREATE, {
-                    operatorNickname: nickname,
-                    targetGroupName: name,
-                    timestamp: timestamp
+                return Session.getCurrentUserNickname(
+                  currentUserId, User).then(
+                  function(
+                    nickname) {
+                    return sendGroupNotification(
+                      currentUserId, group.id,
+                      GROUP_OPERATION_CREATE, {
+                        operatorNickname: nickname,
+                        targetGroupName: name,
+                        timestamp: timestamp
+                      });
                   });
-              });
 
 
 
-            } else {
-              Utility.logError(
-                'Error: create group failed on IM server, code: %s',
-                result.code);
-              return GroupSync.upsert({
-                syncInfo: success,
-                syncMember: success
-              }, {
-                where: {
-                  groupId: group.id
-                }
-              });
-            }
-          });
+              } else {
+                Utility.logError(
+                  'Error: create group failed on IM server, code: %s',
+                  result.code);
+                return GroupSync.upsert({
+                  syncInfo: success,
+                  syncMember: success
+                }, {
+                  where: {
+                    groupId: group.id
+                  }
+                });
+              }
+            });
 
 
 
@@ -576,7 +586,8 @@ router.post('/join', function(req, res, next) {
         timestamp).then(function() {
         var encodedIds;
         encodedIds = [Utility.encodeId(currentUserId)];
-        rongCloud.group.join(encodedIds, encodedGroupId, group.name,
+        rongCloud.group.join(encodedIds, encodedGroupId,
+          group.name,
           function(err, resultText) {
             var result, success;
             if (err) {
@@ -588,7 +599,8 @@ router.post('/join', function(req, res, next) {
             success = result.code === 200;
             if (success) {
               return Session.getCurrentUserNickname(
-                currentUserId, User).then(function(nickname) {
+                currentUserId, User).then(function(
+                nickname) {
                 return sendGroupNotification(
                   currentUserId, groupId,
                   GROUP_OPERATION_ADD, {
@@ -634,7 +646,8 @@ router.post('/kick', function(req, res, next) {
       return res.status(404).send('Unknown group.');
     }
     if (group.creatorId !== currentUserId) {
-      return res.status(403).send('Current user is not group creator.');
+      return res.status(403).send(
+        'Current user is not group creator.');
     }
     return GroupMember.findAll({
       where: {
@@ -694,32 +707,33 @@ router.post('/kick', function(req, res, next) {
                   return res.status(500).send(
                     'Quit failed on IM server.');
                 }
-                return sequelize.transaction(function(
-                  t) {
-                  return Promise.all([
-                    Group.update({
-                      memberCount: group.memberCount -
-                        memberIds.length,
-                      timestamp: timestamp
-                    }, {
-                      where: {
-                        id: groupId
-                      },
-                      transaction: t
-                    }), GroupMember.update({
-                      isDeleted: true,
-                      timestamp: timestamp
-                    }, {
-                      where: {
-                        groupId: groupId,
-                        memberId: {
-                          $in: memberIds
-                        }
-                      },
-                      transaction: t
-                    })
-                  ]);
-                }).then(function() {
+                return sequelize.transaction(
+                  function(
+                    t) {
+                    return Promise.all([
+                      Group.update({
+                        memberCount: group.memberCount -
+                          memberIds.length,
+                        timestamp: timestamp
+                      }, {
+                        where: {
+                          id: groupId
+                        },
+                        transaction: t
+                      }), GroupMember.update({
+                        isDeleted: true,
+                        timestamp: timestamp
+                      }, {
+                        where: {
+                          groupId: groupId,
+                          memberId: {
+                            $in: memberIds
+                          }
+                        },
+                        transaction: t
+                      })
+                    ]);
+                  }).then(function() {
                   return DataVersion.updateGroupMemberVersion(
                     groupId, timestamp).then(
                     function() {
@@ -790,7 +804,8 @@ router.post('/quit', function(req, res, next) {
                 resultMessage = null;
                 return sequelize.transaction(function(t) {
                   var newCreatorId;
-                  if (group.creatorId !== currentUserId) {
+                  if (group.creatorId !==
+                    currentUserId) {
                     resultMessage = 'Quit.';
                     return Promise.all([
                       Group.update({
@@ -819,7 +834,8 @@ router.post('/quit', function(req, res, next) {
                       groupMember) {
                       if (groupMember.memberId !==
                         currentUserId) {
-                        newCreatorId = groupMember.memberId;
+                        newCreatorId =
+                          groupMember.memberId;
                         return true;
                       } else {
                         return false;
@@ -889,10 +905,12 @@ router.post('/quit', function(req, res, next) {
                   }
                 }).then(function() {
                   return DataVersion.updateGroupMemberVersion(
-                    groupId, timestamp).then(function() {
-                    return res.send(new APIResult(
-                      200, null, resultMessage));
-                  });
+                    groupId, timestamp).then(
+                    function() {
+                      return res.send(new APIResult(
+                        200, null,
+                        resultMessage));
+                    });
                 });
               });
           });
@@ -907,85 +925,89 @@ router.post('/dismiss', function(req, res, next) {
   encodedGroupId = req.body.encodedGroupId;
   currentUserId = Session.getCurrentUserId(req);
   timestamp = Date.now();
-  return Session.getCurrentUserNickname(currentUserId, User).then(function(
-    nickname) {
-    return sendGroupNotification(currentUserId, groupId,
-      GROUP_OPERATION_DISMISS, {
-        operatorNickname: nickname,
-        timestamp: timestamp
-      }).then(function() {
-      return rongCloud.group.dismiss(Utility.encodeId(currentUserId),
-        encodedGroupId,
-        function(err, resultText) {
-          var result, success;
-          if (err) {
-            Utility.logError(
-              'Error: dismiss group failed on IM server, error: %s',
-              err);
-          }
-          result = JSON.parse(resultText);
-          success = result.code === 200;
-          if (!success) {
-            Utility.logError(
-              'Error: dismiss group failed on IM server, code: %s',
-              result.code);
-            return res.send(new APIResult(500, null,
-              'Quit failed on IM server.'));
-            GroupSync.upsert({
-              dismiss: true
-            }, {
-              where: {
-                groupId: groupId
-              }
-            });
-          }
-          return sequelize.transaction(function(t) {
-            return Group.update({
-              memberCount: 0
-            }, {
-              where: {
-                id: groupId,
-                creatorId: currentUserId
-              },
-              transaction: t
-            }).then(function(arg) {
-              var affectedCount;
-              affectedCount = arg[0];
-              Utility.log('affectedCount', affectedCount);
-              if (affectedCount === 0) {
-                throw new HTTPError(
-                  'Unknown group or not creator.', 400);
-              }
-              return Promise.all([
-                Group.destroy({
-                  where: {
-                    id: groupId
-                  },
-                  transaction: t
-                }), GroupMember.update({
-                  isDeleted: true,
-                  timestamp: timestamp
-                }, {
-                  where: {
-                    groupId: groupId
-                  },
-                  transaction: t
-                })
-              ]);
-            });
-          }).then(function() {
-            return DataVersion.updateGroupMemberVersion(
-              groupId, timestamp).then(function() {
-              return res.send(new APIResult(200));
-            });
-          })["catch"](function(err) {
-            if (err instanceof HTTPError) {
-              return res.status(err.statusCode).send(err.message);
+  return Session.getCurrentUserNickname(currentUserId, User).then(
+    function(
+      nickname) {
+      return sendGroupNotification(currentUserId, groupId,
+        GROUP_OPERATION_DISMISS, {
+          operatorNickname: nickname,
+          timestamp: timestamp
+        }).then(function() {
+        return rongCloud.group.dismiss(Utility.encodeId(
+            currentUserId),
+          encodedGroupId,
+          function(err, resultText) {
+            var result, success;
+            if (err) {
+              Utility.logError(
+                'Error: dismiss group failed on IM server, error: %s',
+                err);
             }
+            result = JSON.parse(resultText);
+            success = result.code === 200;
+            if (!success) {
+              Utility.logError(
+                'Error: dismiss group failed on IM server, code: %s',
+                result.code);
+              return res.send(new APIResult(500, null,
+                'Quit failed on IM server.'));
+              GroupSync.upsert({
+                dismiss: true
+              }, {
+                where: {
+                  groupId: groupId
+                }
+              });
+            }
+            return sequelize.transaction(function(t) {
+              return Group.update({
+                memberCount: 0
+              }, {
+                where: {
+                  id: groupId,
+                  creatorId: currentUserId
+                },
+                transaction: t
+              }).then(function(arg) {
+                var affectedCount;
+                affectedCount = arg[0];
+                Utility.log('affectedCount',
+                  affectedCount);
+                if (affectedCount === 0) {
+                  throw new HTTPError(
+                    'Unknown group or not creator.',
+                    400);
+                }
+                return Promise.all([
+                  Group.destroy({
+                    where: {
+                      id: groupId
+                    },
+                    transaction: t
+                  }), GroupMember.update({
+                    isDeleted: true,
+                    timestamp: timestamp
+                  }, {
+                    where: {
+                      groupId: groupId
+                    },
+                    transaction: t
+                  })
+                ]);
+              });
+            }).then(function() {
+              return DataVersion.updateGroupMemberVersion(
+                groupId, timestamp).then(function() {
+                return res.send(new APIResult(200));
+              });
+            })["catch"](function(err) {
+              if (err instanceof HTTPError) {
+                return res.status(err.statusCode).send(err.message);
+              }
+            });
           });
-        });
-    });
-  })["catch"](next);
+      });
+    })["catch"](next);
 });
 
 router.post('/rename', function(req, res, next) {
