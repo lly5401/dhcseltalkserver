@@ -172,7 +172,6 @@ validator = sequelize.Validator;
 
 router.post('/create', function(req, res, next) {
 
-  console.log(req.body);
 
   co(function*() {
 
@@ -186,9 +185,7 @@ router.post('/create', function(req, res, next) {
     name = req.body.name;
     datatype = 1;
     deptno = req.body.deptno;
-    if (orderid) {
-      name = `${orderid} - `;
-    };
+
 
     name = Utility.xss(name, GROUP_NAME_MAX_LENGTH);
     memberIds = req.body.memberIds;
@@ -199,135 +196,117 @@ router.post('/create', function(req, res, next) {
 
 
     if (orderid) {
-
-      memberIds = null;
+      memberIds = [];
       var orderGroup = (yield OrderGroup.findOne({
         where: {
           orderid: orderid
         },
-        attributes: ['id', 'orderid', 'groupid']
+        attributes: ['id', 'orderid', 'groupId']
       }));
       if (orderGroup) {
         return res.send(new APIResult(200, Utility.encodeResults({
-          id: orderGroup.groupid
+          id: orderGroup.groupId
         })));
       };
 
-
       url = Config.SD_API_TEST + '/getDataContact.do?deptno=' + deptno +
-        '&datano=' + orderid + '&datatype=1';
+        '&datano=' + orderid + '&datatype=' + datatype;
       var response = (yield requestAsync(url));
-      console.log('response body :' + response.body);
-
       if (response.statusCode == 200) {
         var body = eval('(' + response.body + ')');
+        console.log(body);
         var contactEList = body.contactEList;
         if (contactEList && contactEList.length > 0) {
           var listItem = [];
-          console.log('contacetlist:' + contactEList.length);
-          co(function*() {
-            for (var i in contactEList) {
-
-              var item = contactEList[i];
-              var token = '';
-              var userid = item.userid;
-              var id = '';
-
-              console.log('user' + item.userid);
-              var user = (yield User.findOne({
-                where: {
-                  phone: 'E_' + item.userid
-                },
-                attributes: ['id']
+          for (var i in contactEList) {
+            var item = contactEList[i];
+            var token = '';
+            var userid = item.userid;
+            var id = '';
+            var user = (yield User.findOne({
+              where: {
+                phone: 'E_' + item.userid
+              },
+              attributes: ['id']
+            }));
+            if (user) {
+              id = user.id;
+            } else {
+              var u = (yield User.create({
+                nickname: item.name,
+                region: 86,
+                passwordHash: '1',
+                passwordSalt: '1',
+                phone: 'E_' + userid,
+                mobile: item.mobile,
+                rphone: userid
               }));
-              console.log('found user: ' + user.id);
-              if (user) {
-                id = user.id;
-                console.log('id:' + id);
-              } else {
-                var u = (yield User.create({
-                  nickname: item.name,
-                  region: 86,
-                  passwordHash: '1',
-                  passwordSalt: '1',
-                  phone: 'E_' + userid,
-                  mobile: item.mobile,
-                  rphone: userid
-                }));
-                memids.push(u.id);
-              }
-
-              console.log('userid :' + id);
-              memids.push(id);
-
+              id = u.id;
             }
-          });
+            memids.push(id);
+
+          }
 
 
         };
 
-        // var contactInteriorList = body.contactInteriorList;
-        // if (contactInteriorList && contactInteriorList.length > 0) {
-        //   var listItem = [];
-        //
-        //   for (var i in contactEList) {
-        //     co(function*() {
-        //       var item = contactEList[i];
-        //       var token = '';
-        //       var userid = item.userid;
-        //       var id = '';
-        //
-        //
-        //       var user = (yield User.findOne({
-        //         where: {
-        //           phone: 'E_' + item.userid
-        //         },
-        //         attributes: ['id']
-        //       }));
-        //
-        //       if (user) {
-        //         id = user.id;
-        //       } else {
-        //         var u = (yield User.create({
-        //           nickname: item.name,
-        //           region: 86,
-        //           passwordHash: '1',
-        //           passwordSalt: '1',
-        //           phone: 'E_' + userid,
-        //           mobile: item.mobile,
-        //           rphone: userid
-        //         }));
-        //         memids.push(u.id);
-        //       }
-        //
-        //
-        //       memids.push(id);
-        //     });
-        //   }
-        //
-        //
-        // };
+        var contactInteriorList = body.contactInteriorList;
+        if (contactInteriorList && contactInteriorList.length > 0) {
+          var listItem = [];
+          for (var i in contactInteriorList) {
+            var item = contactInteriorList[i];
+            console.log(item.name);
+            var token = '';
+            var userid = item.userid;
+            var id = '';
+            var user = (yield User.findOne({
+              where: {
+                phone: 'E_' + item.userid
+              },
+              attributes: ['id']
+            }));
+            if (user) {
+              id = user.id;
+            } else {
+              var u = (yield User.create({
+                nickname: item.name,
+                region: 86,
+                passwordHash: '1',
+                passwordSalt: '1',
+                phone: 'E_' + userid,
+                mobile: item.mobile,
+                rphone: userid
+              }));
+              id = u.id;
+            }
+            memids.push(id);
+
+          }
+
+
+        };
+
+
 
       }
 
-
+      memids.push(Session.getCurrentUserId(req));
     } else {
       //(yield memids = insertUsers(users));
     }
 
-    console.log('check memids:' + memids);
     if (memids && memids.length > 0) {
       memids.forEach(function(mem) {
         var eq = false;
         for (var j in memberIds) {
           var ji = memberIds[j];
-          if (mem.id === ji) {
+          if (mem === ji) {
             eq = true;
             break;
           };
         }
         if (!eq) {
-          memberIds.push(u.id);
+          memberIds.push(mem);
         };
       });
     }
@@ -342,9 +321,7 @@ router.post('/create', function(req, res, next) {
     Utility.log('memberIds', memberIds);
     Utility.log('encodedMemberIds', encodedMemberIds);
 
-
-    console.log('memberids : ' + memberIds + ' encodedMemberIds :' +
-      encodedMemberIds);
+    console.log('memberids' + memberIds);
     if (!validator.isLength(name, GROUP_NAME_MIN_LENGTH,
         GROUP_NAME_MAX_LENGTH)) {
       return res.status(400).send(
@@ -390,10 +367,11 @@ router.post('/create', function(req, res, next) {
           (yield GroupMember.bulkUpsert(group.id,
             memberIds,
             timestamp, t, currentUserId));
+
           if (orderid) {
             (yield OrderGroup.create({
               orderid: orderid,
-              groupid: group.id
+              groupId: group.id
             }, {
               transaction: t
             }));
@@ -416,9 +394,6 @@ router.post('/create', function(req, res, next) {
               result = JSON.parse(resultText);
               success = result.code === 200;
               if (success) {
-
-
-
                 return Session.getCurrentUserNickname(
                   currentUserId, User).then(
                   function(
@@ -469,16 +444,18 @@ router.post('/add', function(req, res, next) {
     timestamp;
   groupId = req.body.groupId;
   memberIds = req.body.memberIds;
-  console.log('memberIds' + memberIds);
+  console.log('memberIds' + memberIds + '; groupid: ' + groupId);
   encodedGroupId = req.body.encodedGroupId;
   encodedMemberIds = req.body.encodedMemberIds;
   Utility.log('Group %s add members %j by user %s', groupId, memberIds,
+    Session.getCurrentUserId(req));
+  console.log('Group %s add members %j by user %s', groupId, memberIds,
     Session.getCurrentUserId(req));
   currentUserId = Session.getCurrentUserId(req);
   timestamp = Date.now();
   return Group.getInfo(groupId).then(function(group) {
     var memberCount;
-    console.log(group.id);
+    console.log('addd groupid: ' + group.id);
     if (!group) {
       return res.status(404).send('Unknown group.');
     }
